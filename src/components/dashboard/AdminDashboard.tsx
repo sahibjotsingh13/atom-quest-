@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CycleManager } from "@/components/admin/CycleManager";
 import { SharedGoalPush } from "@/components/admin/SharedGoalPush";
 import { EscalationList } from "@/components/admin/EscalationList";
@@ -15,80 +14,140 @@ import { Shield, Sparkles } from "lucide-react";
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("cycles");
 
+  const tabs = [
+    { id: "cycles", label: "Cycles" },
+    { id: "shared", label: "Shared Goals" },
+    { id: "escalations", label: "Escalations" },
+    { id: "analytics", label: "Analytics" },
+    { id: "audit", label: "Audit" },
+    { id: "reports", label: "Reports" },
+  ];
+
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-7xl mx-auto pb-16">
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "80rem", margin: "0 auto", paddingBottom: "4rem" }}>
         {/* Top Hero Banner */}
-        <div className="glass rounded-3xl p-8 shadow-2xl border border-skin-200/60 dark:border-skin-800/60 relative overflow-hidden bg-gradient-to-r from-skin-100/40 via-transparent to-accent/5 dark:from-skin-900/40 dark:via-transparent dark:to-accent/10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-          
-          <div className="flex justify-between items-center gap-6 relative z-10">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-extrabold tracking-tight text-skin-900 dark:text-skin-50">Admin Control Center</h1>
-                <span className="bg-accent/20 text-accent dark:text-accent-light border border-accent/30 px-3 py-1 rounded-full text-xs font-bold shadow-sm animate-pulse flex items-center gap-1.5">
+        <div className="hero-banner">
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "24rem",
+              height: "24rem",
+              background: "radial-gradient(circle, rgba(48,176,208,0.06) 0%, transparent 70%)",
+              borderRadius: "50%",
+              pointerEvents: "none",
+              marginRight: "-5rem",
+              marginTop: "-5rem",
+            }}
+          />
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1.5rem", position: "relative", zIndex: 1, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+                <h1
+                  className="font-serif-display"
+                  style={{
+                    fontSize: "1.875rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    color: "#ffffff",
+                    textShadow: "0 2px 24px rgba(0,0,0,0.45)",
+                  }}
+                >
+                  Admin Control Center
+                </h1>
+                <span
+                  className="alert-glass"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.375rem",
+                    padding: "0.25rem 0.75rem",
+                    color: "#5cc8e0",
+                    border: "1px solid rgba(48,176,208,0.2)",
+                    fontSize: "0.6875rem",
+                    fontWeight: 700,
+                    borderRadius: "9999px",
+                  }}
+                >
                   <Sparkles className="w-3.5 h-3.5" /> Live Portal
                 </span>
               </div>
-              <p className="text-skin-600 dark:text-skin-300 text-sm font-medium">
+              <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.6)" }}>
                 System configuration, compliance monitoring, and high-fidelity performance analytics
               </p>
             </div>
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-light to-accent-dark flex items-center justify-center shadow-xl transform hover:rotate-12 transition-transform duration-300 flex-shrink-0">
+            <div
+              style={{
+                width: "4rem",
+                height: "4rem",
+                borderRadius: "1rem",
+                background: "linear-gradient(135deg, #5cc8e0, #1a8ca8)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 8px 32px rgba(48,176,208,0.3)",
+                flexShrink: 0,
+              }}
+            >
               <Shield className="w-8 h-8 text-white animate-pulse" />
             </div>
           </div>
         </div>
 
         {/* 3D Styled Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
-          <TabsList className="flex w-full glass p-2 rounded-2xl mb-6 overflow-x-auto no-scrollbar border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 shadow-lg">
-            <TabsTrigger value="cycles" className="flex-1 py-3 rounded-xl font-bold text-sm transition-all data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:shadow-lg">
-              Cycles
-            </TabsTrigger>
-            <TabsTrigger value="shared" className="flex-1 py-3 rounded-xl font-bold text-sm transition-all data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:shadow-lg">
-              Shared Goals
-            </TabsTrigger>
-            <TabsTrigger value="escalations" className="flex-1 py-3 rounded-xl font-bold text-sm transition-all data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:shadow-lg">
-              Escalations
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex-1 py-3 rounded-xl font-bold text-sm transition-all data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:shadow-lg">
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="audit" className="flex-1 py-3 rounded-xl font-bold text-sm transition-all data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:shadow-lg">
-              Audit
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="flex-1 py-3 rounded-xl font-bold text-sm transition-all data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:shadow-lg">
-              Reports
-            </TabsTrigger>
-          </TabsList>
+        <div className="glass" style={{ padding: "0.5rem", borderRadius: "1rem", display: "flex", overflowX: "auto", gap: "0.25rem" }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="font-sans-body"
+              style={{
+                flex: 1,
+                minWidth: "100px",
+                padding: "0.75rem 1.25rem",
+                borderRadius: "0.75rem",
+                fontWeight: 700,
+                fontSize: "0.8125rem",
+                transition: "all 0.3s ease",
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+                border: "none",
+                background: activeTab === tab.id
+                  ? "linear-gradient(135deg, #30b0d0, #1a8ca8)"
+                  : "transparent",
+                color: activeTab === tab.id ? "#050a0f" : "rgba(237,232,228,0.6)",
+                boxShadow: activeTab === tab.id ? "0 4px 16px rgba(48,176,208,0.3)" : "none",
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== tab.id) {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                  e.currentTarget.style.color = "#ede8e4";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== tab.id) {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "rgba(237,232,228,0.6)";
+                }
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-          <div className="mt-8 relative z-10">
-            <TabsContent value="cycles" className="m-0">
-              <CycleManager />
-            </TabsContent>
-
-            <TabsContent value="shared" className="m-0">
-              <SharedGoalPush />
-            </TabsContent>
-
-            <TabsContent value="escalations" className="m-0">
-              <EscalationList />
-            </TabsContent>
-
-            <TabsContent value="analytics" className="m-0">
-              <AnalyticsDashboard />
-            </TabsContent>
-
-            <TabsContent value="audit" className="m-0">
-              <AuditViewer />
-            </TabsContent>
-
-            <TabsContent value="reports" className="m-0">
-              <ReportExport />
-            </TabsContent>
-          </div>
-        </Tabs>
+        {/* Tab Content */}
+        <div style={{ position: "relative", zIndex: 1 }}>
+          {activeTab === "cycles" && <CycleManager />}
+          {activeTab === "shared" && <SharedGoalPush />}
+          {activeTab === "escalations" && <EscalationList />}
+          {activeTab === "analytics" && <AnalyticsDashboard />}
+          {activeTab === "audit" && <AuditViewer />}
+          {activeTab === "reports" && <ReportExport />}
+        </div>
       </div>
     </AppLayout>
   );

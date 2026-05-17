@@ -4,21 +4,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Users,
   Clock,
@@ -69,9 +54,7 @@ export function ManagerDashboard() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [sheetDetail, setSheetDetail] = useState<any>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [edits, setEdits] = useState<
-    Record<string, { targetValue?: number; weightage?: number }>
-  >({});
+  const [edits, setEdits] = useState<Record<string, { targetValue?: number; weightage?: number }>>({});
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [actionError, setActionError] = useState("");
@@ -99,35 +82,96 @@ export function ManagerDashboard() {
     },
   });
 
-  // Fetch sheet detail
+  // Fetch specific sheet details when reviewing a member
   const fetchSheetDetail = async (sheetId: string) => {
-    const res = await fetch(`/api/manager/sheet/${sheetId}`);
-    if (!res.ok) throw new Error("Failed to fetch sheet");
-    return res.json();
+    const res = await fetch(`/api/manager/sheets/${sheetId}`);
+    if (!res.ok) throw new Error("Failed to fetch sheet details");
+    const data = await res.json();
+    setSheetDetail(data);
+
+    // Initialize edits state
+    const initialEdits: Record<string, { targetValue?: number; weightage?: number }> = {};
+    data.goals?.forEach((g: any) => {
+      initialEdits[g.id] = {
+        targetValue: g.targetValue,
+        weightage: g.weightage,
+      };
+    });
+    setEdits(initialEdits);
+    setShowReviewModal(true);
   };
 
-  // Review mutation
-  const reviewSheet = useMutation({
-    mutationFn: async ({ sheetId, action, edits, rejectionReason }: any) => {
-      const res = await fetch("/api/manager/review", {
+  // Approve sheet mutation
+  const approveSheet = useMutation({
+    mutationFn: async (sheetId: string) => {
+      const res = await fetch(`/api/manager/sheets/${sheetId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sheetId, action, edits, rejectionReason }),
+        body: JSON.stringify({ goalUpdates: edits }),
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || err.errors?.[0] || "Failed to review");
+        throw new Error(err.error || "Failed to approve sheet");
       }
       return res.json();
     },
-    onSuccess: (data) => {
-      setActionSuccess(data.message);
-      setShowReviewModal(false);
-      setShowRejectDialog(false);
-      setEdits({});
-      setRejectionReason("");
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["managerTeam"] });
-      setTimeout(() => setActionSuccess(""), 5000);
+      setActionSuccess("Sheet approved successfully!");
+      setShowReviewModal(false);
+      setTimeout(() => setActionSuccess(""), 3000);
+    },
+    onError: (err: any) => {
+      setActionError(err.message);
+    },
+  });
+
+  // Reject sheet mutation
+  const rejectSheet = useMutation({
+    mutationFn: async ({ sheetId, reason }: { sheetId: string; reason: string }) => {
+      const res = await fetch(`/api/manager/sheets/${sheetId}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to reject sheet");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["managerTeam"] });
+      setActionSuccess("Sheet returned for rework.");
+      setShowRejectDialog(false);
+      setShowReviewModal(false);
+      setRejectionReason("");
+      setTimeout(() => setActionSuccess(""), 3000);
+    },
+    onError: (err: any) => {
+      setActionError(err.message);
+    },
+  });
+
+  // Unlock sheet mutation
+  const unlockSheet = useMutation({
+    mutationFn: async ({ sheetId, reason }: { sheetId: string; reason: string }) => {
+      const res = await fetch(`/api/manager/sheets/${sheetId}/unlock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to unlock sheet");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["managerTeam"] });
+      setActionSuccess("Sheet unlocked for employee edits.");
+      setShowReviewModal(false);
+      setTimeout(() => setActionSuccess(""), 3000);
     },
     onError: (err: any) => {
       setActionError(err.message);
@@ -144,88 +188,23 @@ export function ManagerDashboard() {
     avgTeamProgress: 0,
   };
 
-  const handleViewSheet = async (member: TeamMember) => {
-    if (!member.sheetId) return;
-    setSelectedMember(member);
-    try {
-      const detail = await fetchSheetDetail(member.sheetId);
-      setSheetDetail(detail);
-      setShowReviewModal(true);
-      setEdits({});
-      setActionError("");
-    } catch (err: any) {
-      setActionError(err.message);
-    }
-  };
-
-  const handleEditChange = (goalId: string, field: string, value: number) => {
-    setEdits((prev) => ({
-      ...prev,
-      [goalId]: {
-        ...prev[goalId],
-        [field]: value,
-      },
-    }));
-  };
-
-  const handleApprove = () => {
-    setActionError("");
-    const editArray = Object.entries(edits).map(([goalId, values]) => ({
-      goalId,
-      ...values,
-    }));
-    reviewSheet.mutate({
-      sheetId: sheetDetail?.id,
-      action: "approve",
-      edits: editArray.length > 0 ? editArray : undefined,
-    });
-  };
-
-  const handleReject = () => {
-    if (!rejectionReason.trim() || rejectionReason.trim().length < 10) {
-      setActionError("Rejection reason must be at least 10 characters");
-      return;
-    }
-    setActionError("");
-    reviewSheet.mutate({
-      sheetId: sheetDetail?.id,
-      action: "reject",
-      rejectionReason,
-    });
-  };
-
   const getStatusBadge = (status: string) => {
+    const baseClasses = "inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-sm";
     switch (status) {
-      case "draft":
-        return <Badge variant="outline" className="px-3 py-1 text-xs font-semibold bg-skin-100 dark:bg-skin-800 text-skin-700 dark:text-skin-200 border-skin-300 dark:border-skin-700 shadow-sm">Draft</Badge>;
-      case "submitted":
-        return (
-          <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 px-3 py-1 text-xs font-semibold shadow-sm shimmer">
-            <Clock className="w-3 h-3 mr-1" /> Pending Approval
-          </Badge>
-        );
-      case "locked":
-        return (
-          <Badge className="bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30 px-3 py-1 text-xs font-semibold shadow-sm">
-            <CheckCircle className="w-3 h-3 mr-1" /> Approved
-          </Badge>
-        );
-      case "rejected":
-        return (
-          <Badge variant="destructive" className="px-3 py-1 text-xs font-semibold shadow-sm animate-pulse">
-            <XCircle className="w-3 h-3 mr-1" /> Rejected
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold shadow-sm">No Sheet</Badge>;
+      case "submitted": return <span className={`${baseClasses} bg-[rgba(48,176,208,0.1)] text-[#5cc8e0] border border-[rgba(48,176,208,0.2)] shimmer`}><Clock className="w-3.5 h-3.5" /> Pending Approval</span>;
+      case "approved": return <span className={`${baseClasses} bg-[rgba(34,197,94,0.1)] text-[#4ade80] border border-[rgba(34,197,94,0.2)]`}><CheckCircle2 className="w-3.5 h-3.5" /> Approved</span>;
+      case "locked": return <span className={`${baseClasses} bg-[rgba(34,197,94,0.1)] text-[#4ade80] border border-[rgba(34,197,94,0.2)]`}><Lock className="w-3.5 h-3.5" /> Locked</span>;
+      case "draft": return <span className={`${baseClasses} bg-[rgba(255,255,255,0.06)] text-[#ede8e4] border border-[rgba(255,255,255,0.1)]`}>Draft Mode</span>;
+      case "rejected": return <span className={`${baseClasses} bg-[rgba(239,68,68,0.1)] text-[#f87171] border border-[rgba(239,68,68,0.2)]`}><RotateCcw className="w-3.5 h-3.5" /> Rework Required</span>;
+      default: return <span className={`${baseClasses} bg-[rgba(255,255,255,0.06)] text-[#ede8e4] border border-[rgba(255,255,255,0.1)]`}>No Sheet</span>;
     }
   };
 
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-[70vh]">
-          <Loader2 className="w-12 h-12 animate-spin text-accent" />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "70vh" }}>
+          <Loader2 className="w-12 h-12 animate-spin text-[#30b0d0]" />
         </div>
       </AppLayout>
     );
@@ -233,573 +212,730 @@ export function ManagerDashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-7xl mx-auto pb-16">
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "80rem", margin: "0 auto", paddingBottom: "4rem" }}>
         {/* Top Hero Banner */}
-        <div className="glass rounded-3xl p-8 shadow-2xl border border-skin-200/60 dark:border-skin-800/60 relative overflow-hidden bg-gradient-to-r from-skin-100/40 via-transparent to-accent/5 dark:from-skin-900/40 dark:via-transparent dark:to-accent/10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-          
-          <div className="flex justify-between items-center gap-6 relative z-10">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-extrabold tracking-tight text-skin-900 dark:text-skin-50">Team Dashboard</h1>
-                <span className="bg-accent/20 text-accent dark:text-accent-light border border-accent/30 px-3 py-1 rounded-full text-xs font-bold shadow-sm animate-pulse flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> 3D Live Portal
-                </span>
+        <div className="hero-banner">
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "24rem",
+              height: "24rem",
+              background: "radial-gradient(circle, rgba(48,176,208,0.06) 0%, transparent 70%)",
+              borderRadius: "50%",
+              pointerEvents: "none",
+              marginRight: "-5rem",
+              marginTop: "-5rem",
+            }}
+          />
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1.5rem", position: "relative", zIndex: 1, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+                <h1
+                  className="font-serif-display"
+                  style={{
+                    fontSize: "1.875rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    color: "#ffffff",
+                    textShadow: "0 2px 24px rgba(0,0,0,0.45)",
+                  }}
+                >
+                  Manager Overview
+                </h1>
+                {summary.pendingApprovals > 0 && (
+                  <span
+                    className="alert-glass"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.375rem",
+                      padding: "0.25rem 0.75rem",
+                      color: "#fbbf24",
+                      border: "1px solid rgba(245,158,11,0.2)",
+                      fontSize: "0.6875rem",
+                      fontWeight: 700,
+                      borderRadius: "9999px",
+                    }}
+                  >
+                    <Clock className="w-3.5 h-3.5 animate-pulse" /> {summary.pendingApprovals} Pending Approval
+                  </span>
+                )}
               </div>
-              <p className="text-skin-600 dark:text-skin-300 text-sm font-medium">
-                Manage your team&apos;s strategic goal sheets, review quarterly check-ins, and track alignment
+              <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.6)" }}>
+                Monitor team strategic alignment, approve goal sheets, and review quarterly progress check-ins
               </p>
             </div>
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-light to-accent-dark flex items-center justify-center shadow-xl transform hover:rotate-12 transition-transform duration-300 flex-shrink-0">
-              <Users className="w-8 h-8 text-white animate-pulse" />
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <div
+                style={{
+                  width: "4rem",
+                  height: "4rem",
+                  borderRadius: "1rem",
+                  background: "linear-gradient(135deg, #30b0d0, #1a8ca8)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 8px 32px rgba(48,176,208,0.3)",
+                  flexShrink: 0,
+                }}
+              >
+                <Users className="w-8 h-8 text-white animate-pulse" />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 3D Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="iso-card glass rounded-2xl p-6 shadow-lg border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 flex items-center gap-4 group">
-            <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20 group-hover:scale-110 transition-transform">
-              <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-skin-900 dark:text-skin-50">{summary.totalMembers}</p>
-              <p className="text-xs text-skin-500 dark:text-skin-400 font-semibold uppercase tracking-wider mt-0.5">Team Members</p>
-            </div>
+        {/* Global Notifications */}
+        {actionError && (
+          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.05)" }}>
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <span className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 500 }}>{actionError}</span>
           </div>
-
-          <div className="iso-card glass rounded-2xl p-6 shadow-lg border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 flex items-center gap-4 group">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 group-hover:scale-110 transition-transform">
-              <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-amber-600 dark:text-amber-400">{summary.pendingApprovals}</p>
-              <p className="text-xs text-skin-500 dark:text-skin-400 font-semibold uppercase tracking-wider mt-0.5">Pending Approvals</p>
-            </div>
-          </div>
-
-          <div className="iso-card glass rounded-2xl p-6 shadow-lg border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 flex items-center gap-4 group">
-            <div className="p-3 bg-green-500/10 rounded-xl border border-green-500/20 group-hover:scale-110 transition-transform">
-              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">{summary.approvedSheets}</p>
-              <p className="text-xs text-skin-500 dark:text-skin-400 font-semibold uppercase tracking-wider mt-0.5">Approved Sheets</p>
-            </div>
-          </div>
-
-          <div className="iso-card glass rounded-2xl p-6 shadow-lg border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 flex items-center gap-4 group">
-            <div className="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20 group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">{summary.avgTeamProgress}%</p>
-              <p className="text-xs text-skin-500 dark:text-skin-400 font-semibold uppercase tracking-wider mt-0.5">Avg Progress</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Alerts */}
+        )}
         {actionSuccess && (
-          <Alert className="glass rounded-2xl border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-300 shadow-lg animate-fade-in">
-            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-            <AlertDescription className="ml-2 font-semibold">
-              {actionSuccess}
-            </AlertDescription>
-          </Alert>
+          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#4ade80", border: "1px solid rgba(34,197,94,0.2)", background: "rgba(34,197,94,0.05)" }}>
+            <CheckCircle className="w-5 h-5 flex-shrink-0 text-[#4ade80]" />
+            <span className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 500 }}>{actionSuccess}</span>
+          </div>
         )}
 
-        {/* Pending Approvals Alert */}
-        {summary.pendingApprovals > 0 && (
-          <Alert className="glass rounded-2xl border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-300 shadow-lg animate-pulse">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            <AlertDescription className="ml-2 font-semibold">
-              You have <strong className="text-amber-600 dark:text-amber-400 font-extrabold">{summary.pendingApprovals}</strong> goal sheet(s)
-              pending your approval.
-            </AlertDescription>
-          </Alert>
-        )}
+        {/* Team Summary Cards Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.5rem" }}>
+          <div className="summary-card" style={{ padding: "1.5rem", borderRadius: "1.25rem", display: "flex", alignItems: "center", gap: "1.25rem" }}>
+            <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "1rem", background: "rgba(48,176,208,0.1)", border: "1px solid rgba(48,176,208,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Users className="w-6 h-6 text-[#30b0d0]" />
+            </div>
+            <div>
+              <span className="font-sans-body" style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Total Team Size</span>
+              <p className="font-serif-display" style={{ fontSize: "1.75rem", fontWeight: 700, color: "#ffffff", marginTop: "0.25rem" }}>{summary.totalMembers}</p>
+            </div>
+          </div>
 
-        {/* Tab Switcher */}
-        <div className="flex border-b border-skin-200 dark:border-skin-800 gap-4">
+          <div className="summary-card" style={{ padding: "1.5rem", borderRadius: "1.25rem", display: "flex", alignItems: "center", gap: "1.25rem" }}>
+            <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "1rem", background: summary.pendingApprovals > 0 ? "rgba(245,158,11,0.1)" : "rgba(255,255,255,0.04)", border: summary.pendingApprovals > 0 ? "1px solid rgba(245,158,11,0.2)" : "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Clock className={`w-6 h-6 ${summary.pendingApprovals > 0 ? "text-[#fbbf24] animate-spin" : "text-[rgba(237,232,228,0.4)]"}`} />
+            </div>
+            <div>
+              <span className="font-sans-body" style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Pending Approval</span>
+              <p className="font-serif-display" style={{ fontSize: "1.75rem", fontWeight: 700, color: summary.pendingApprovals > 0 ? "#fbbf24" : "#ffffff", marginTop: "0.25rem" }}>{summary.pendingApprovals}</p>
+            </div>
+          </div>
+
+          <div className="summary-card" style={{ padding: "1.5rem", borderRadius: "1.25rem", display: "flex", alignItems: "center", gap: "1.25rem" }}>
+            <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "1rem", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <CheckCircle2 className="w-6 h-6 text-[#4ade80]" />
+            </div>
+            <div>
+              <span className="font-sans-body" style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Approved / Locked</span>
+              <p className="font-serif-display" style={{ fontSize: "1.75rem", fontWeight: 700, color: "#ffffff", marginTop: "0.25rem" }}>{summary.approvedSheets}</p>
+            </div>
+          </div>
+
+          <div className="summary-card" style={{ padding: "1.5rem", borderRadius: "1.25rem", display: "flex", alignItems: "center", gap: "1.25rem" }}>
+            <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "1rem", background: "rgba(48,176,208,0.1)", border: "1px solid rgba(48,176,208,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Activity className="w-6 h-6 text-[#5cc8e0]" />
+            </div>
+            <div>
+              <span className="font-sans-body" style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Avg Team Progress</span>
+              <p className="font-serif-display" style={{ fontSize: "1.75rem", fontWeight: 700, color: "#ffffff", marginTop: "0.25rem" }}>{summary.avgTeamProgress.toFixed(1)}%</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 3D Styled View Tabs */}
+        <div className="glass" style={{ padding: "0.5rem", borderRadius: "1rem", display: "flex", gap: "0.5rem", width: "fit-content" }}>
           <button
-            className={`px-6 py-4 text-sm font-bold transition-all border-b-4 flex items-center gap-2 ${
-              activeTab === "members"
-                ? "border-accent text-accent dark:text-accent-light bg-accent/5 rounded-t-xl"
-                : "border-transparent text-skin-500 hover:text-skin-900 dark:hover:text-skin-100"
-            }`}
             onClick={() => setActiveTab("members")}
+            className="tab-btn font-sans-body"
+            style={{
+              padding: "0.75rem 1.5rem",
+              borderRadius: "0.75rem",
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              border: "none",
+              background: activeTab === "members" ? "linear-gradient(135deg, #30b0d0, #1a8ca8)" : "transparent",
+              color: activeTab === "members" ? "#050a0f" : "rgba(237,232,228,0.6)",
+              boxShadow: activeTab === "members" ? "0 4px 16px rgba(48,176,208,0.3)" : "none",
+            }}
           >
             <Users className="w-4 h-4" />
-            <span>Team Members</span>
+            <span>Team Members ({members.length})</span>
           </button>
           <button
-            className={`px-6 py-4 text-sm font-bold transition-all border-b-4 flex items-center gap-2 ${
-              activeTab === "checkins"
-                ? "border-accent text-accent dark:text-accent-light bg-accent/5 rounded-t-xl"
-                : "border-transparent text-skin-500 hover:text-skin-900 dark:hover:text-skin-100"
-            }`}
             onClick={() => setActiveTab("checkins")}
+            className="tab-btn font-sans-body"
+            style={{
+              padding: "0.75rem 1.5rem",
+              borderRadius: "0.75rem",
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              border: "none",
+              background: activeTab === "checkins" ? "linear-gradient(135deg, #30b0d0, #1a8ca8)" : "transparent",
+              color: activeTab === "checkins" ? "#050a0f" : "rgba(237,232,228,0.6)",
+              boxShadow: activeTab === "checkins" ? "0 4px 16px rgba(48,176,208,0.3)" : "none",
+            }}
           >
-            <Activity className="w-4 h-4" />
-            <span>Recent Check-ins</span>
-            {checkIns.length > 0 && (
-              <Badge variant="secondary" className="ml-1 text-[10px] px-2 py-0.5 rounded-full bg-accent text-white font-extrabold badge-bounce">
-                {checkIns.length}
-              </Badge>
-            )}
+            <Clock className="w-4 h-4" />
+            <span>Quarterly Check-ins ({checkIns.length})</span>
           </button>
         </div>
 
-        {activeTab === "members" ? (
-          <>
-            {/* Team Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {members.map((member) => (
-                <div
-                  key={member.id}
-                  className={`iso-card glass rounded-3xl p-6 shadow-xl border transition-all duration-500 cursor-pointer hover:shadow-2xl hover:border-accent/40 bg-white/40 dark:bg-skin-900/40 relative overflow-hidden group ${
-                    member.sheetStatus === "submitted" ? "border-amber-500/50 shadow-[0_8px_32px_0_rgba(245,158,11,0.15)]" : "border-skin-200/60 dark:border-skin-800/60"
-                  }`}
-                  onClick={() => handleViewSheet(member)}
-                >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-2xl pointer-events-none group-hover:bg-accent/10 transition-colors"></div>
-
-                  <div className="flex items-start justify-between mb-6 relative z-10">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12 border-2 border-accent/20 shadow-md">
-                        <AvatarFallback className="bg-gradient-to-br from-skin-400 to-skin-600 text-white font-bold text-base">
-                          {member.firstName[0]}
-                          {member.lastName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-bold text-lg text-skin-900 dark:text-skin-50 group-hover:text-accent dark:group-hover:text-accent-light transition-colors">
-                          {member.firstName} {member.lastName}
-                        </h3>
-                        <p className="text-xs text-skin-500 dark:text-skin-400 font-medium mt-0.5">
-                          {member.employeeId}
-                        </p>
-                      </div>
+        {/* Tab 1: Team Members Grid */}
+        {activeTab === "members" && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "1.5rem" }}>
+            {members.map((m) => (
+              <div
+                key={m.id}
+                className="glass-card"
+                style={{
+                  padding: "1.75rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1.5rem",
+                  position: "relative",
+                  overflow: "hidden",
+                  transition: "all 0.4s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(48,176,208,0.2)";
+                  e.currentTarget.style.boxShadow = "0 16px 32px rgba(0,0,0,0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                {/* Header Row */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                    <div
+                      style={{
+                        width: "3rem",
+                        height: "3rem",
+                        borderRadius: "0.75rem",
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03))",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "1.125rem",
+                        fontWeight: 700,
+                        color: "#ffffff",
+                        boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)",
+                      }}
+                    >
+                      {m.firstName[0]}{m.lastName[0]}
                     </div>
-                    {getStatusBadge(member.sheetStatus)}
-                  </div>
-
-                  <div className="space-y-4 relative z-10 border-t border-skin-200/50 dark:border-skin-800/50 pt-4">
-                    <div className="flex justify-between text-sm font-semibold">
-                      <span className="text-skin-600 dark:text-skin-300">Total Goals</span>
-                      <span className="font-bold text-skin-900 dark:text-skin-50">{member.goalCount}</span>
-                    </div>
-                    <div className="flex justify-between text-sm font-semibold">
-                      <span className="text-skin-600 dark:text-skin-300">Allocated Weightage</span>
-                      <span className="font-bold text-accent dark:text-accent-light">{member.totalWeightage}%</span>
-                    </div>
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex justify-between text-sm font-semibold">
-                        <span className="text-skin-600 dark:text-skin-300">Average Progress</span>
-                        <span className="font-bold text-skin-900 dark:text-skin-50">{member.avgProgress}%</span>
-                      </div>
-                      <div className="relative h-2.5 w-full bg-skin-200 dark:bg-skin-800 rounded-full overflow-hidden p-0.5 shadow-inner">
-                        <div 
-                          className="h-full bg-gradient-to-r from-accent-light via-accent to-accent-dark rounded-full transition-all duration-1000 ease-out shadow-sm"
-                          style={{ width: `${Math.min(100, member.avgProgress)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between text-sm font-semibold pt-1">
-                      <span className="text-skin-600 dark:text-skin-300">Check-in Rate</span>
-                      <span className="font-bold text-green-600 dark:text-green-400">{member.checkinRate}%</span>
+                    <div>
+                      <h3 className="font-serif-display" style={{ fontSize: "1.125rem", fontWeight: 600, color: "#ffffff" }}>
+                        {m.firstName} {m.lastName}
+                      </h3>
+                      <p className="font-sans-body" style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)", marginTop: "0.125rem" }}>
+                        ID: {m.employeeId}
+                      </p>
                     </div>
                   </div>
+                  {getStatusBadge(m.sheetStatus)}
+                </div>
 
-                  <div className="mt-6 flex justify-end relative z-10 border-t border-skin-200/50 dark:border-skin-800/50 pt-4">
-                    <Button variant="ghost" size="sm" className="btn-3d text-accent dark:text-accent-light hover:bg-accent hover:text-white transition-all font-bold rounded-xl px-4 py-2 flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      <span>View Goal Sheet</span>
-                      <ChevronRight className="w-4 h-4 ml-0.5" />
-                    </Button>
+                {/* Metrics Grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", padding: "1.25rem 0", borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div>
+                    <span className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>Goals</span>
+                    <p className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 700, color: "#ffffff", marginTop: "0.25rem" }}>{m.goalCount || 0}</p>
+                  </div>
+                  <div>
+                    <span className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>Weightage</span>
+                    <p className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 700, color: m.totalWeightage === 100 ? "#4ade80" : "#fbbf24", marginTop: "0.25rem" }}>{m.totalWeightage || 0}%</p>
+                  </div>
+                  <div>
+                    <span className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>Progress</span>
+                    <p className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 700, color: "#5cc8e0", marginTop: "0.25rem" }}>{(m.avgProgress || 0).toFixed(1)}%</p>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {members.length === 0 && (
-              <div className="glass rounded-3xl p-16 text-center border border-dashed border-skin-300 dark:border-skin-700 bg-white/30 dark:bg-skin-900/30 shadow-xl space-y-4">
-                <Users className="w-12 h-12 text-skin-300 dark:text-skin-700 mx-auto animate-pulse" />
-                <h3 className="text-xl font-extrabold text-skin-900 dark:text-skin-50">
-                  No Team Members Assigned
-                </h3>
-                <p className="text-skin-500 dark:text-skin-400 text-sm max-w-sm mx-auto">
-                  You don&apos;t have any direct reports assigned to your management hierarchy yet.
-                </p>
-              </div>
-            )}
-          </>
-        ) : (
-          /* Check-ins Feed */
-          <div className="space-y-6">
-            {checkIns.map((ci: any) => (
-              <div key={ci.id} className="iso-card glass rounded-3xl p-6 shadow-xl border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 hover:shadow-2xl transition-all duration-500 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-2xl pointer-events-none group-hover:bg-accent/10 transition-colors"></div>
-
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-12 w-12 border-2 border-accent/20 shadow-md flex-shrink-0">
-                      <AvatarFallback className="bg-gradient-to-br from-skin-400 to-skin-600 text-white font-bold text-base">
-                        {ci.goal?.goalSheet?.employee?.firstName?.[0]}
-                        {ci.goal?.goalSheet?.employee?.lastName?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-lg text-skin-900 dark:text-skin-50">
-                          {ci.goal?.goalSheet?.employee?.firstName} {ci.goal?.goalSheet?.employee?.lastName}
-                        </span>
-                        <Badge variant="outline" className="bg-accent/10 text-accent dark:text-accent-light border-accent/30 px-3 py-1 rounded-lg text-xs font-bold shadow-sm">
-                          {ci.quarter} Check-in
-                        </Badge>
-                      </div>
-                      <p className="text-sm font-semibold text-skin-700 dark:text-skin-200">{ci.goal?.title}</p>
-                      <p className="text-xs text-skin-500 dark:text-skin-400 line-clamp-2 pt-1">{ci.notes}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-3 w-full md:w-auto border-t md:border-t-0 border-skin-200/50 dark:border-skin-800/50 pt-4 md:pt-0">
-                    <span className="text-xs font-semibold text-skin-400 dark:text-skin-500 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{new Date(ci.createdAt).toLocaleDateString()}</span>
-                    </span>
-                    <Button 
-                      size="sm" 
-                      className="btn-3d px-6 py-5 rounded-2xl bg-gradient-to-r from-accent-light to-accent-dark hover:from-accent hover:to-accent-dark text-white font-bold shadow-lg shadow-accent/20 flex items-center gap-2 w-full md:w-auto justify-center"
-                      onClick={() => setReviewingCheckIn(ci)}
+                {/* Action Button */}
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  {m.sheetId ? (
+                    <button
+                      onClick={() => { setSelectedMember(m); fetchSheetDetail(m.sheetId!); }}
+                      className="login-btn login-btn-primary"
+                      style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", padding: "0.625rem 1.25rem" }}
                     >
-                      <MessageSquare className="w-4 h-4" />
-                      <span>{ci.managerComment ? "Update Feedback" : "Review Check-in"}</span>
-                    </Button>
-                  </div>
+                      <Eye className="w-4 h-4" />
+                      <span>{m.sheetStatus === "submitted" ? "Review & Approve" : "View Sheet"}</span>
+                      <ChevronRight className="w-4 h-4 ml-0.5" />
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="login-btn"
+                      style={{ fontSize: "0.8125rem", padding: "0.625rem 1.25rem", opacity: 0.5, cursor: "not-allowed", border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)", color: "rgba(237,232,228,0.4)" }}
+                    >
+                      No Sheet Created
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
 
-            {checkIns.length === 0 && (
-              <div className="glass rounded-3xl p-16 text-center border border-dashed border-skin-300 dark:border-skin-700 bg-white/30 dark:bg-skin-900/30 shadow-xl space-y-4">
-                <Activity className="w-12 h-12 text-skin-300 dark:text-skin-700 mx-auto animate-pulse" />
-                <h3 className="text-xl font-extrabold text-skin-900 dark:text-skin-50">
-                  No Recent Team Activity
-                </h3>
-                <p className="text-skin-500 dark:text-skin-400 text-sm max-w-sm mx-auto">
-                  Your team hasn&apos;t submitted any quarterly performance check-ins for review yet.
-                </p>
+            {members.length === 0 && (
+              <div className="empty-state" style={{ gridColumn: "1 / -1", padding: "4rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
+                <Users className="w-12 h-12 text-[rgba(237,232,228,0.3)] animate-pulse" />
+                <h3 className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff" }}>No Team Members Found</h3>
+                <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)" }}>Your direct reports will appear here once assigned in the system.</p>
               </div>
             )}
           </div>
         )}
-      </div>
 
-      {/* Review Modal */}
-      <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass rounded-3xl border border-skin-200/60 dark:border-skin-800/60 bg-white/90 dark:bg-skin-950/90 shadow-2xl p-8 backdrop-blur-2xl">
-          <DialogHeader className="border-b border-skin-200/50 dark:border-skin-800/50 pb-6 mb-6">
-            <DialogTitle className="flex items-center gap-3 text-2xl font-extrabold text-skin-900 dark:text-skin-50">
-              <FileText className="w-7 h-7 text-accent" />
-              <span>Reviewing {sheetDetail?.employee?.firstName} {sheetDetail?.employee?.lastName}&apos;s Goal Sheet</span>
-              {sheetDetail?.status === "submitted" && (
-                <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 px-3 py-1 rounded-xl text-xs font-bold shadow-sm animate-pulse ml-auto">
-                  Pending Review
-                </Badge>
-              )}
-            </DialogTitle>
-          </DialogHeader>
-
-          {actionError && (
-            <Alert variant="destructive" className="glass rounded-2xl border-destructive/50 bg-destructive/10 text-destructive dark:text-red-300 shadow-lg mb-6">
-              <AlertTriangle className="h-5 w-5" />
-              <AlertDescription className="ml-2 font-semibold">{actionError}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="space-y-6">
-            {/* Sheet Info Bar */}
-            <div className="glass rounded-2xl p-6 bg-skin-100/50 dark:bg-skin-900/50 border border-skin-200/60 dark:border-skin-800/60 flex flex-wrap justify-between items-center gap-6 shadow-inner">
-              <div className="space-y-1">
-                <span className="text-xs text-skin-500 dark:text-skin-400 font-semibold uppercase tracking-wider">Performance Cycle</span>
-                <p className="text-base font-bold text-skin-900 dark:text-skin-50">{sheetDetail?.cycle?.name}</p>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs text-skin-500 dark:text-skin-400 font-semibold uppercase tracking-wider">Allocated Weightage</span>
-                <p className="text-base font-bold text-accent dark:text-accent-light">{sheetDetail?.totalWeightage}%</p>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs text-skin-500 dark:text-skin-400 font-semibold uppercase tracking-wider">Total Objectives</span>
-                <p className="text-base font-bold text-skin-900 dark:text-skin-50">{sheetDetail?.goals?.length} Goals</p>
-              </div>
-            </div>
-
-            {/* Goals List */}
-            <div className="space-y-6">
-              {sheetDetail?.goals?.map((goal: any, idx: number) => (
+        {/* Tab 2: Check-ins List */}
+        {activeTab === "checkins" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {checkIns.map((c: any) => {
+              const goal = c.goal;
+              const employee = goal?.goalSheet?.employee;
+              return (
                 <div
-                  key={goal.id}
-                  className={`glass rounded-2xl p-6 border shadow-lg transition-all ${
-                    goal.isShared 
-                      ? "border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/10 shadow-[0_8px_32px_0_rgba(59,130,246,0.05)]" 
-                      : "border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40"
-                  }`}
+                  key={`${c.goalId}-${c.quarter}`}
+                  className="glass-card"
+                  style={{
+                    padding: "1.5rem 2rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "2rem",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(48,176,208,0.2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                  }}
                 >
-                  <div className="flex justify-between items-start gap-6">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span className="w-7 h-7 rounded-lg bg-skin-200 dark:bg-skin-800 flex items-center justify-center text-xs font-bold text-skin-700 dark:text-skin-200 shadow-inner">
-                          #{idx + 1}
+                  <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flex: 1 }}>
+                    <div
+                      style={{
+                        width: "3rem",
+                        height: "3rem",
+                        borderRadius: "0.75rem",
+                        background: "rgba(48,176,208,0.1)",
+                        border: "1px solid rgba(48,176,208,0.2)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Clock className="w-6 h-6 text-[#30b0d0]" />
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <h4 className="font-serif-display" style={{ fontSize: "1.0625rem", fontWeight: 600, color: "#ffffff" }}>
+                          {employee?.firstName} {employee?.lastName}
+                        </h4>
+                        <span style={{ fontSize: "0.75rem", padding: "0.25rem 0.625rem", borderRadius: "9999px", background: "rgba(255,255,255,0.06)", color: "#ede8e4", fontWeight: 600 }}>
+                          {c.quarter}
                         </span>
-                        {goal.isShared && (
-                          <Badge variant="outline" className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-3 py-1 rounded-lg text-xs font-bold shadow-sm">
-                            Shared Goal
-                          </Badge>
+                        {c.status === "completed" && <span style={{ fontSize: "0.75rem", padding: "0.25rem 0.625rem", borderRadius: "9999px", background: "rgba(34,197,94,0.1)", color: "#4ade80", fontWeight: 600 }}>Completed</span>}
+                        {c.status === "on_track" && <span style={{ fontSize: "0.75rem", padding: "0.25rem 0.625rem", borderRadius: "9999px", background: "rgba(48,176,208,0.1)", color: "#5cc8e0", fontWeight: 600 }}>On Track</span>}
+                        {c.status === "at_risk" && <span style={{ fontSize: "0.75rem", padding: "0.25rem 0.625rem", borderRadius: "9999px", background: "rgba(245,158,11,0.1)", color: "#fbbf24", fontWeight: 600 }}>At Risk</span>}
+                      </div>
+                      <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.7)" }}>
+                        {goal?.title}
+                      </p>
+                      <div style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.8125rem", color: "rgba(237,232,228,0.4)", marginTop: "0.25rem" }}>
+                        <span>Target: {goal?.targetValue}</span>
+                        <span>•</span>
+                        <span>Actual: {c.actualAchievement}</span>
+                        {c.employeeComment && (
+                          <>
+                            <span>•</span>
+                            <span style={{ color: "rgba(237,232,228,0.6)", fontStyle: "italic" }}>&quot;{c.employeeComment}&quot;</span>
+                          </>
                         )}
-                        <Badge variant="secondary" className="px-3 py-1 rounded-lg text-xs font-semibold shadow-sm">
-                          {goal.thrustArea?.name}
-                        </Badge>
                       </div>
+                    </div>
+                  </div>
 
-                      <h4 className="text-lg font-bold text-skin-900 dark:text-skin-50 tracking-tight">
-                        {goal.title}
-                      </h4>
-                      {goal.description && (
-                        <p className="text-sm text-skin-600 dark:text-skin-300 leading-relaxed">
-                          {goal.description}
-                        </p>
-                      )}
+                  <button
+                    onClick={() => setReviewingCheckIn(c)}
+                    className="login-btn login-btn-primary"
+                    style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", padding: "0.625rem 1.25rem", flexShrink: 0 }}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Provide Feedback</span>
+                  </button>
+                </div>
+              );
+            })}
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-skin-200/50 dark:border-skin-800/50 text-sm">
-                        <div className="glass px-4 py-2.5 rounded-xl bg-skin-100/50 dark:bg-skin-800/50 space-y-1">
-                          <span className="text-xs text-skin-500 dark:text-skin-400 font-medium block">UoM Type</span>
-                          <p className="font-bold text-skin-900 dark:text-skin-100">{goal.uomType?.name}</p>
+            {checkIns.length === 0 && (
+              <div className="empty-state" style={{ padding: "4rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
+                <Clock className="w-12 h-12 text-[rgba(237,232,228,0.3)] animate-pulse" />
+                <h3 className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff" }}>No Check-ins Pending Review</h3>
+                <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)" }}>Quarterly check-in updates submitted by your team will appear here.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Modal: Sheet Review & Approval */}
+        {showReviewModal && sheetDetail && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 50,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "1.5rem",
+              background: "rgba(5, 10, 15, 0.8)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              animation: "fadeIn 0.3s ease",
+            }}
+          >
+            <div
+              className="modal-glass"
+              style={{
+                width: "100%",
+                maxWidth: "64rem",
+                maxHeight: "90vh",
+                display: "flex",
+                flexDirection: "column",
+                borderRadius: "1.5rem",
+                overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+              }}
+            >
+              {/* Modal Header */}
+              <div style={{ padding: "1.75rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.02)" }}>
+                <div>
+                  <h3 className="font-serif-display" style={{ fontSize: "1.375rem", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                    <span>Review Goal Sheet</span>
+                    {getStatusBadge(sheetDetail.status)}
+                  </h3>
+                  <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.6)", marginTop: "0.25rem" }}>
+                    {selectedMember?.firstName} {selectedMember?.lastName} ({selectedMember?.employeeId}) • Cycle: {sheetDetail.cycle?.name}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowReviewModal(false)}
+                  style={{
+                    width: "2.5rem",
+                    height: "2.5rem",
+                    borderRadius: "0.75rem",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "rgba(237,232,228,0.6)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(237,232,228,0.6)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div style={{ padding: "2rem", overflowY: "auto", display: "flex", flexDirection: "column", gap: "2rem" }}>
+                <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#5cc8e0", border: "1px solid rgba(48,176,208,0.2)", background: "rgba(48,176,208,0.05)" }}>
+                  <Sparkles className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-sans-body" style={{ fontSize: "0.875rem" }}>
+                    You can adjust targets and weightages directly before approving, or return the sheet to the employee with specific rework instructions.
+                  </span>
+                </div>
+
+                {/* Goals Table / List */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  <h4 className="font-serif-display" style={{ fontSize: "1.125rem", fontWeight: 600, color: "#ffffff" }}>
+                    Configured Objectives ({sheetDetail.goals?.length || 0})
+                  </h4>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    {sheetDetail.goals?.map((g: any, index: number) => (
+                      <div
+                        key={g.id}
+                        style={{
+                          padding: "1.5rem",
+                          borderRadius: "1rem",
+                          background: "rgba(255,255,255,0.02)",
+                          border: "1px solid rgba(255,255,255,0.06)",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "1.25rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                            <span style={{ width: "1.75rem", height: "1.75rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, color: "#ffffff" }}>
+                              #{index + 1}
+                            </span>
+                            <h5 className="font-serif-display" style={{ fontSize: "1.0625rem", fontWeight: 600, color: "#ffffff" }}>
+                              {g.title}
+                            </h5>
+                          </div>
+                          {g.isShared && <span style={{ fontSize: "0.75rem", padding: "0.25rem 0.625rem", borderRadius: "9999px", background: "rgba(48,176,208,0.1)", color: "#5cc8e0", border: "1px solid rgba(48,176,208,0.2)", fontWeight: 600 }}>Shared Goal</span>}
                         </div>
-                        <div className="glass px-4 py-2.5 rounded-xl bg-skin-100/50 dark:bg-skin-800/50 space-y-1">
-                          <span className="text-xs text-skin-500 dark:text-skin-400 font-medium block">Current Target</span>
-                          <p className="font-bold text-skin-900 dark:text-skin-100">
-                            {goal.uomType?.code === "timeline" && goal.targetDate
-                              ? new Date(goal.targetDate).toLocaleDateString()
-                              : goal.targetValue}
+
+                        {g.description && (
+                          <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.7)", lineHeight: 1.6 }}>
+                            {g.description}
                           </p>
-                        </div>
-                        <div className="glass px-4 py-2.5 rounded-xl bg-skin-100/50 dark:bg-skin-800/50 space-y-1">
-                          <span className="text-xs text-skin-500 dark:text-skin-400 font-medium block">Weightage</span>
-                          <p className="font-bold text-accent dark:text-accent-light">{goal.weightage}%</p>
-                        </div>
-                      </div>
+                        )}
 
-                      {/* Inline Editing (only for pending review) */}
-                      {sheetDetail?.status === "submitted" && !goal.isShared && (
-                        <div className="mt-6 p-6 glass rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-4 shadow-sm">
-                          <p className="text-sm font-bold text-amber-700 dark:text-amber-300 flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4" />
-                            <span>Inline Manager Adjustments (Optional)</span>
-                          </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-bold text-amber-800 dark:text-amber-200">
-                                Adjusted Target Value
-                              </Label>
-                              <Input
-                                type="number"
-                                step="any"
-                                defaultValue={goal.targetValue || ""}
-                                onChange={(e) =>
-                                  handleEditChange(
-                                    goal.id,
-                                    "targetValue",
-                                    parseFloat(e.target.value)
-                                  )
-                                }
-                                className="input-3d h-11 rounded-xl bg-white dark:bg-skin-900 border-skin-200 dark:border-skin-700 text-sm font-semibold"
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-bold text-amber-800 dark:text-amber-200">
-                                Adjusted Weightage (%)
-                              </Label>
-                              <Input
-                                type="number"
-                                step="0.1"
-                                min="10"
-                                max="100"
-                                defaultValue={goal.weightage}
-                                onChange={(e) =>
-                                  handleEditChange(
-                                    goal.id,
-                                    "weightage",
-                                    parseFloat(e.target.value)
-                                  )
-                                }
-                                className="input-3d h-11 rounded-xl bg-white dark:bg-skin-900 border-skin-200 dark:border-skin-700 text-sm font-semibold"
-                              />
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", padding: "1rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.04)" }}>
+                          <div style={{ flex: 1, minWidth: "140px", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            <label className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Target Value ({g.uomType?.name})</label>
+                            <input
+                              type="number"
+                              value={edits[g.id]?.targetValue ?? g.targetValue}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value);
+                                setEdits((prev) => ({
+                                  ...prev,
+                                  [g.id]: { ...prev[g.id], targetValue: isNaN(val) ? 0 : val },
+                                }));
+                              }}
+                              disabled={sheetDetail.status === "approved" || sheetDetail.status === "locked"}
+                              style={{
+                                width: "100%",
+                                padding: "0.625rem 1rem",
+                                borderRadius: "0.5rem",
+                                background: "rgba(255,255,255,0.04)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                color: "#ffffff",
+                                fontSize: "0.875rem",
+                                fontWeight: 600,
+                                outline: "none",
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ flex: 1, minWidth: "140px", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            <label className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Weightage (%)</label>
+                            <input
+                              type="number"
+                              value={edits[g.id]?.weightage ?? g.weightage}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value);
+                                setEdits((prev) => ({
+                                  ...prev,
+                                  [g.id]: { ...prev[g.id], weightage: isNaN(val) ? 0 : val },
+                                }));
+                              }}
+                              disabled={sheetDetail.status === "approved" || sheetDetail.status === "locked"}
+                              style={{
+                                width: "100%",
+                                padding: "0.625rem 1rem",
+                                borderRadius: "0.5rem",
+                                background: "rgba(255,255,255,0.04)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                color: "#ffffff",
+                                fontSize: "0.875rem",
+                                fontWeight: 600,
+                                outline: "none",
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ flex: 1, minWidth: "140px", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            <span className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Thrust Area</span>
+                            <div style={{ padding: "0.625rem 1rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", color: "rgba(237,232,228,0.7)", fontSize: "0.875rem" }}>
+                              {g.thrustArea?.name || "N/A"}
                             </div>
                           </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Validation Warning */}
-            {sheetDetail?.status === "submitted" &&
-              Number(sheetDetail?.totalWeightage) !== 100 && (
-                <Alert variant="destructive" className="glass rounded-2xl border-destructive/50 bg-destructive/10 text-destructive dark:text-red-300 shadow-lg animate-pulse">
-                  <AlertTriangle className="h-5 w-5" />
-                  <AlertDescription className="ml-2 font-semibold">
-                    Total weightage is currently <strong className="font-extrabold">{sheetDetail?.totalWeightage}%</strong>. Must equal
-                    exactly 100% before approval.
-                  </AlertDescription>
-                </Alert>
-              )}
+                {/* Total Weightage Verification */}
+                {(() => {
+                  const currentTotal = sheetDetail.goals?.reduce((sum: number, g: any) => sum + Number(edits[g.id]?.weightage ?? g.weightage), 0) || 0;
+                  return (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.25rem 1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "1rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <span className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 600, color: "rgba(237,232,228,0.7)" }}>Adjusted Total Weightage:</span>
+                      <span className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 700, color: Math.abs(currentTotal - 100) < 0.01 ? "#4ade80" : "#fbbf24" }}>
+                        {currentTotal.toFixed(1)}% {Math.abs(currentTotal - 100) < 0.01 ? "✓ Valid" : "(! Must be exactly 100%)"}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
 
-            {/* Action Buttons */}
-            {sheetDetail?.status === "submitted" && (
-              <div className="flex flex-wrap justify-end gap-4 pt-6 border-t border-skin-200/50 dark:border-skin-800/50 sticky bottom-0 bg-white/80 dark:bg-skin-950/80 backdrop-blur-md py-4 z-20 rounded-b-3xl">
-                <Button
-                  variant="outline"
-                  className="btn-3d px-6 py-5 rounded-2xl bg-skin-100 dark:bg-skin-800 border-skin-200 dark:border-skin-700 hover:bg-destructive hover:text-white transition-all font-bold shadow-sm"
-                  onClick={() => setShowRejectDialog(true)}
-                  disabled={reviewSheet.isPending}
-                >
-                  <XCircle className="w-5 h-5 mr-2" />
-                  <span>Return for Rework</span>
-                </Button>
-                <Button
-                  onClick={handleApprove}
-                  disabled={
-                    reviewSheet.isPending ||
-                    Number(sheetDetail?.totalWeightage) !== 100
-                  }
-                  className="btn-3d px-8 py-5 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold shadow-lg shadow-green-500/20 flex items-center gap-2"
-                >
-                  {reviewSheet.isPending ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+              {/* Modal Footer Actions */}
+              <div style={{ padding: "1.5rem 2rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.02)" }}>
+                <div>
+                  {sheetDetail.status === "approved" || sheetDetail.status === "locked" ? (
+                    <button
+                      onClick={() => {
+                        const reason = prompt("Enter reason for unlocking this sheet:");
+                        if (reason) unlockSheet.mutate({ sheetId: sheetDetail.id, reason });
+                      }}
+                      disabled={unlockSheet.isPending}
+                      className="login-btn"
+                      style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem", background: "rgba(245,158,11,0.1)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.2)" }}
+                    >
+                      {unlockSheet.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlock className="w-4 h-4" />}
+                      <span>Unlock for Employee Edits</span>
+                    </button>
                   ) : (
-                    <CheckCircle2 className="w-5 h-5" />
+                    <button
+                      onClick={() => setShowRejectDialog(true)}
+                      className="login-btn"
+                      style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem", background: "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      <span>Return for Rework</span>
+                    </button>
                   )}
-                  <span>Approve & Lock Sheet</span>
-                </Button>
-              </div>
-            )}
+                </div>
 
-            {/* Locked/Approved Actions (Unlock/Reset) */}
-            {(sheetDetail?.status === "locked" || sheetDetail?.status === "approved") && (
-              <div className="flex flex-wrap justify-end gap-4 pt-6 border-t border-skin-200/50 dark:border-skin-800/50 sticky bottom-0 bg-white/80 dark:bg-skin-950/80 backdrop-blur-md py-4 z-20 rounded-b-3xl">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (confirm("Reset this sheet to draft? All approval history will be cleared.")) {
-                      reviewSheet.mutate({ sheetId: sheetDetail.id, action: "reset" });
-                    }
-                  }}
-                  disabled={reviewSheet.isPending}
-                  className="btn-3d px-6 py-5 rounded-2xl text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500 hover:text-white transition-all font-bold shadow-sm"
-                >
-                  <RotateCcw className="w-5 h-5 mr-2" />
-                  <span>Reset to Draft Mode</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (confirm("Unlock this sheet for further editing?")) {
-                      reviewSheet.mutate({ sheetId: sheetDetail.id, action: "unlock" });
-                    }
-                  }}
-                  disabled={reviewSheet.isPending}
-                  className="btn-3d px-6 py-5 rounded-2xl text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10 hover:bg-blue-500 hover:text-white transition-all font-bold shadow-sm"
-                >
-                  <Unlock className="w-5 h-5 mr-2" />
-                  <span>Unlock for Employee Edits</span>
-                </Button>
-              </div>
-            )}
+                <div style={{ display: "flex", gap: "1rem" }}>
+                  <button
+                    onClick={() => setShowReviewModal(false)}
+                    className="login-btn"
+                    style={{ fontSize: "0.875rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(237,232,228,0.8)" }}
+                  >
+                    Cancel
+                  </button>
 
-            {/* View-only for approved/rejected */}
-            {sheetDetail?.status !== "submitted" && (
-              <div className="flex justify-end pt-6 border-t border-skin-200/50 dark:border-skin-800/50 sticky bottom-0 bg-white/80 dark:bg-skin-950/80 backdrop-blur-md py-4 z-20 rounded-b-3xl">
-                <Button
-                  variant="outline"
-                  className="btn-3d px-8 py-5 rounded-2xl bg-skin-100 dark:bg-skin-800 border-skin-200 dark:border-skin-700 hover:bg-skin-200 dark:hover:bg-skin-700 transition-all font-bold shadow-sm"
-                  onClick={() => setShowReviewModal(false)}
-                >
-                  Close Modal
-                </Button>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reject Dialog */}
-      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-        <DialogContent className="max-w-lg glass rounded-3xl border border-skin-200/60 dark:border-skin-800/60 bg-white/90 dark:bg-skin-950/90 shadow-2xl p-8 backdrop-blur-2xl">
-          <DialogHeader className="border-b border-skin-200/50 dark:border-skin-800/50 pb-4 mb-4">
-            <DialogTitle className="text-xl font-extrabold text-skin-900 dark:text-skin-50 flex items-center gap-2">
-              <XCircle className="w-6 h-6 text-destructive" />
-              <span>Return Goal Sheet for Rework</span>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6">
-            <p className="text-sm font-medium text-skin-600 dark:text-skin-300 leading-relaxed">
-              Please provide comprehensive, actionable feedback explaining why this goal sheet requires adjustments. Your feedback will be directly visible on the employee&apos;s dashboard.
-            </p>
-            <div className="space-y-2">
-              <Textarea
-                placeholder="e.g., Please review Objective #2 to ensure the target is SMART. Also, rebalance the weightage distribution..."
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                rows={5}
-                className="input-3d rounded-2xl bg-white dark:bg-skin-900 border-skin-200 dark:border-skin-700 p-4 text-sm font-medium leading-relaxed resize-none focus:border-destructive"
-              />
-              <div className="flex justify-between items-center text-xs font-semibold px-1">
-                <span className={rejectionReason.length > 0 && rejectionReason.length < 10 ? "text-destructive" : "text-skin-500 dark:text-skin-400"}>
-                  Minimum 10 characters required
-                </span>
-                <span className="text-skin-500 dark:text-skin-400">
-                  {rejectionReason.length} characters
-                </span>
+                  {sheetDetail.status === "submitted" && (
+                    <button
+                      onClick={() => approveSheet.mutate(sheetDetail.id)}
+                      disabled={approveSheet.isPending}
+                      className="login-btn login-btn-primary"
+                      style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem", background: "linear-gradient(135deg, #22c55e, #16a34a)" }}
+                    >
+                      {approveSheet.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                      <span>Approve Goal Sheet</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex justify-end gap-4 pt-4 border-t border-skin-200/50 dark:border-skin-800/50">
-              <Button
-                variant="outline"
-                className="btn-3d px-6 py-5 rounded-2xl bg-skin-100 dark:bg-skin-800 border-skin-200 dark:border-skin-700 hover:bg-skin-200 dark:hover:bg-skin-700 transition-all font-bold shadow-sm"
-                onClick={() => setShowRejectDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                className="btn-3d px-8 py-5 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-red-500/20 flex items-center gap-2"
-                onClick={handleReject}
-                disabled={
-                  reviewSheet.isPending || rejectionReason.trim().length < 10
-                }
-              >
-                {reviewSheet.isPending ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <XCircle className="w-5 h-5" />
-                )}
-                <span>Confirm Return for Rework</span>
-              </Button>
+          </div>
+        )}
+
+        {/* Modal: Rejection / Return Reason */}
+        {showRejectDialog && sheetDetail && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 60,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "1.5rem",
+              background: "rgba(5, 10, 15, 0.8)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              animation: "fadeIn 0.3s ease",
+            }}
+          >
+            <div
+              className="modal-glass"
+              style={{
+                width: "100%",
+                maxWidth: "32rem",
+                display: "flex",
+                flexDirection: "column",
+                borderRadius: "1.5rem",
+                overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+              }}
+            >
+              <div style={{ padding: "1.75rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
+                <h3 className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <RotateCcw className="w-5 h-5 text-[#f87171]" />
+                  <span>Return Sheet for Rework</span>
+                </h3>
+              </div>
+
+              <div style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.7)", lineHeight: 1.6 }}>
+                  Please provide clear, actionable feedback explaining what needs to be adjusted (e.g., target values, weightage distribution, or thrust area alignment).
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  <label className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Rework Instructions / Feedback</label>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="Enter specific feedback for the employee..."
+                    rows={4}
+                    style={{
+                      width: "100%",
+                      padding: "0.875rem 1rem",
+                      borderRadius: "0.75rem",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "#ffffff",
+                      fontSize: "0.875rem",
+                      outline: "none",
+                      resize: "none",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ padding: "1.5rem 2rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "flex-end", gap: "1rem", background: "rgba(255,255,255,0.02)" }}>
+                <button
+                  onClick={() => setShowRejectDialog(false)}
+                  className="login-btn"
+                  style={{ fontSize: "0.875rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(237,232,228,0.8)" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => rejectSheet.mutate({ sheetId: sheetDetail.id, reason: rejectionReason })}
+                  disabled={rejectSheet.isPending || !rejectionReason.trim()}
+                  className="login-btn login-btn-primary"
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem", background: "linear-gradient(135deg, #ef4444, #dc2626)", opacity: rejectionReason.trim() ? 1 : 0.5 }}
+                >
+                  {rejectSheet.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                  <span>Confirm Return</span>
+                </button>
+              </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        )}
 
-      {/* Check-in Review Modal */}
-      <CheckInReview
-        open={!!reviewingCheckIn}
-        onClose={() => setReviewingCheckIn(null)}
-        checkIn={reviewingCheckIn}
-      />
+        {/* Check-in Review Modal */}
+        <CheckInReview
+          open={!!reviewingCheckIn}
+          onClose={() => setReviewingCheckIn(null)}
+          checkIn={reviewingCheckIn}
+        />
+      </div>
     </AppLayout>
   );
 }

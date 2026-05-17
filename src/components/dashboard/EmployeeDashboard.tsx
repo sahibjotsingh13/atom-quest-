@@ -5,11 +5,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { GoalForm } from "@/components/goals/GoalForm";
 import { GoalCard } from "@/components/goals/GoalCard";
 import { WeightageChart } from "@/components/goals/WeightageChart";
@@ -224,20 +219,21 @@ export function EmployeeDashboard() {
   };
 
   const getStatusBadge = () => {
+    const baseClasses = "inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-sm";
     switch (sheet?.status) {
-      case "draft": return <Badge variant="outline" className="px-3 py-1 text-xs font-semibold bg-skin-100 dark:bg-skin-800 text-skin-700 dark:text-skin-200 border-skin-300 dark:border-skin-700 shadow-sm">Draft Mode</Badge>;
-      case "submitted": return <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 px-3 py-1 text-xs font-semibold shadow-sm shimmer">Pending Approval</Badge>;
-      case "locked": return <Badge className="bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30 px-3 py-1 text-xs font-semibold shadow-sm"><Lock className="w-3.5 h-3.5 mr-1.5" /> Approved & Locked</Badge>;
-      case "rejected": return <Badge variant="destructive" className="px-3 py-1 text-xs font-semibold shadow-sm animate-pulse"><RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Rejected - Action Required</Badge>;
-      default: return <Badge variant="outline" className="px-3 py-1 text-xs font-semibold bg-skin-100 dark:bg-skin-800 text-skin-700 dark:text-skin-200 border-skin-300 dark:border-skin-700 shadow-sm">Draft Mode</Badge>;
+      case "draft": return <span className={`${baseClasses} bg-[rgba(255,255,255,0.06)] text-[#ede8e4] border border-[rgba(255,255,255,0.1)]`}>Draft Mode</span>;
+      case "submitted": return <span className={`${baseClasses} bg-[rgba(48,176,208,0.1)] text-[#5cc8e0] border border-[rgba(48,176,208,0.2)] shimmer`}>Pending Approval</span>;
+      case "locked": return <span className={`${baseClasses} bg-[rgba(34,197,94,0.1)] text-[#4ade80] border border-[rgba(34,197,94,0.2)]`}><Lock className="w-3.5 h-3.5" /> Approved &amp; Locked</span>;
+      case "rejected": return <span className={`${baseClasses} bg-[rgba(239,68,68,0.1)] text-[#f87171] border border-[rgba(239,68,68,0.2)] animate-pulse`}><RotateCcw className="w-3.5 h-3.5" /> Rejected - Action Required</span>;
+      default: return <span className={`${baseClasses} bg-[rgba(255,255,255,0.06)] text-[#ede8e4] border border-[rgba(255,255,255,0.1)]`}>Draft Mode</span>;
     }
   };
 
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-[70vh]">
-          <Loader2 className="w-12 h-12 animate-spin text-accent" />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "70vh" }}>
+          <Loader2 className="w-12 h-12 animate-spin text-[#30b0d0]" />
         </div>
       </AppLayout>
     );
@@ -245,58 +241,100 @@ export function EmployeeDashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-6xl mx-auto pb-16">
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "72rem", margin: "0 auto", paddingBottom: "4rem" }}>
         {/* Top Hero Banner */}
-        <div className="glass rounded-3xl p-8 shadow-2xl border border-skin-200/60 dark:border-skin-800/60 relative overflow-hidden bg-gradient-to-r from-skin-100/40 via-transparent to-accent/5 dark:from-skin-900/40 dark:via-transparent dark:to-accent/10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-extrabold tracking-tight text-skin-900 dark:text-skin-50">My Goal Sheet</h1>
-                {getStatusBadge()}
-              </div>
-              <p className="text-skin-600 dark:text-skin-300 flex items-center gap-2 text-sm font-medium">
-                <CalendarDays className="w-4 h-4 text-accent" />
-                <span>{sheet?.cycle?.name || "Current Performance Cycle"}</span>
-                <span className="text-skin-300 dark:text-skin-700">•</span>
-                <span className="text-skin-500 dark:text-skin-400">Manage, align, and track your strategic objectives</span>
-              </p>
-            </div>
+        <div className="hero-banner">
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "24rem",
+              height: "24rem",
+              background: "radial-gradient(circle, rgba(48,176,208,0.06) 0%, transparent 70%)",
+              borderRadius: "50%",
+              pointerEvents: "none",
+              marginRight: "-5rem",
+              marginTop: "-5rem",
+            }}
+          />
 
-            <div className="flex flex-wrap gap-3 w-full md:w-auto">
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+              <h1
+                className="font-serif-display"
+                style={{
+                  fontSize: "1.875rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.02em",
+                  color: "#ffffff",
+                  textShadow: "0 2px 24px rgba(0,0,0,0.45)",
+                }}
+              >
+                My Goal Sheet
+              </h1>
+              {getStatusBadge()}
+            </div>
+            <p
+              className="font-sans-body"
+              style={{
+                fontSize: "0.875rem",
+                color: "rgba(237, 232, 228, 0.6)",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <CalendarDays className="w-4 h-4 text-[#30b0d0]" />
+              <span>{sheet?.cycle?.name || "Current Performance Cycle"}</span>
+              <span style={{ color: "rgba(237,232,228,0.2)" }}>•</span>
+              <span style={{ color: "rgba(237,232,228,0.4)" }}>Manage, align, and track your strategic objectives</span>
+            </p>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
               {canEdit && (
-                <Button 
+                <button
                   onClick={() => { setEditingGoal(null); setShowForm(true); }}
-                  className="btn-3d flex-1 md:flex-none px-6 py-5 rounded-2xl bg-gradient-to-r from-accent-light to-accent-dark hover:from-accent hover:to-accent-dark text-white font-bold shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
+                  className="login-btn login-btn-primary"
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem" }}
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4" />
                   <span>Add New Goal</span>
-                </Button>
+                </button>
               )}
               {canEdit && goals.length > 0 && (
-                <Button 
-                  onClick={() => submitSheet.mutate()} 
+                <button
+                  onClick={() => submitSheet.mutate()}
                   disabled={submitSheet.isPending || !canSubmit}
-                  className={`btn-3d flex-1 md:flex-none px-6 py-5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${
-                    canSubmit 
-                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/20" 
-                      : "bg-skin-200 dark:bg-skin-800 text-skin-500 dark:text-skin-400 cursor-not-allowed border border-skin-300 dark:border-skin-700"
-                  }`}
+                  className="login-btn"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    fontSize: "0.8125rem",
+                    opacity: canSubmit ? 1 : 0.5,
+                    cursor: canSubmit ? "pointer" : "not-allowed",
+                    background: canSubmit
+                      ? "linear-gradient(135deg, #22c55e, #16a34a)"
+                      : "rgba(255,255,255,0.04)",
+                    color: canSubmit ? "#ffffff" : "rgba(237,232,228,0.4)",
+                    border: canSubmit ? "none" : "1px solid rgba(255,255,255,0.08)",
+                  }}
                 >
-                  {submitSheet.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                  {submitSheet.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   <span>Submit for Approval</span>
-                </Button>
+                </button>
               )}
               {isLocked && (
-                <div className="glass px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-300 font-bold flex items-center gap-2 shadow-sm">
-                  <ShieldCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <span>Sheet Approved & Locked</span>
+                <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#4ade80", fontWeight: 600, fontSize: "0.8125rem" }}>
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Sheet Approved &amp; Locked</span>
                 </div>
               )}
               {isSubmitted && (
-                <div className="glass px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-bold flex items-center gap-2 shadow-sm shimmer">
-                  <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#fbbf24", fontWeight: 600, fontSize: "0.8125rem" }}>
+                  <Clock className="w-4 h-4" />
                   <span>Awaiting Manager Review</span>
                 </div>
               )}
@@ -306,96 +344,118 @@ export function EmployeeDashboard() {
 
         {/* Alerts & Notifications */}
         {error && (
-          <Alert variant="destructive" className="glass rounded-2xl border-destructive/50 bg-destructive/10 text-destructive dark:text-red-300 shadow-lg animate-fade-in">
-            <AlertCircle className="h-5 w-5" />
-            <AlertDescription className="ml-2 font-semibold">{error}</AlertDescription>
-          </Alert>
+          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.05)" }}>
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 500 }}>{error}</span>
+          </div>
         )}
         {success && (
-          <Alert className="glass rounded-2xl border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-300 shadow-lg animate-fade-in">
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-            <AlertDescription className="ml-2 font-semibold">{success}</AlertDescription>
-          </Alert>
+          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#4ade80", border: "1px solid rgba(34,197,94,0.2)", background: "rgba(34,197,94,0.05)" }}>
+            <CheckCircle className="w-5 h-5 flex-shrink-0 text-[#4ade80]" />
+            <span className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 500 }}>{success}</span>
+          </div>
         )}
 
         {/* Rejection Reason Banner */}
         {sheet?.status === "rejected" && sheet?.rejectionReason && (
-          <Alert variant="destructive" className="glass rounded-2xl border-destructive bg-destructive/15 text-destructive dark:text-red-200 shadow-xl p-6">
-            <AlertCircle className="h-6 w-6" />
-            <AlertDescription className="ml-3 text-base">
-              <strong className="block text-lg font-bold mb-1">Returned for Rework by Manager:</strong> 
-              {sheet.rejectionReason}
-            </AlertDescription>
-          </Alert>
+          <div className="alert-glass" style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "1.25rem 1.5rem", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.08)" }}>
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div className="font-sans-body">
+              <strong style={{ display: "block", fontSize: "1rem", fontWeight: 700, marginBottom: "0.25rem" }}>Returned for Rework by Manager:</strong>
+              <span style={{ fontSize: "0.875rem", lineHeight: 1.6 }}>{sheet.rejectionReason}</span>
+            </div>
+          </div>
         )}
 
         {/* Submit Hint Banner */}
         {canSubmit && (
-          <Alert className="glass rounded-2xl border-accent/50 bg-accent/10 text-skin-900 dark:text-skin-100 shadow-lg p-6 flex items-center gap-4">
-            <Sparkles className="w-8 h-8 text-accent animate-bounce" />
-            <AlertDescription className="text-base font-medium">
-              <strong className="text-accent dark:text-accent-light font-bold block text-lg mb-0.5">All Requirements Met!</strong>
-              Your goal sheet is fully balanced and configured. Click <strong className="text-skin-900 dark:text-white">&quot;Submit for Approval&quot;</strong> above to send it to your manager.
-            </AlertDescription>
-          </Alert>
+          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.25rem 1.5rem", color: "#ede8e4", border: "1px solid rgba(48,176,208,0.2)", background: "rgba(48,176,208,0.05)" }}>
+            <Sparkles className="w-6 h-6 text-[#30b0d0] animate-bounce flex-shrink-0" />
+            <div className="font-sans-body">
+              <strong style={{ display: "block", fontSize: "1rem", fontWeight: 700, marginBottom: "0.125rem", color: "#5cc8e0" }}>All Requirements Met!</strong>
+              <span style={{ fontSize: "0.875rem", lineHeight: 1.6 }}>
+                Your goal sheet is fully balanced and configured. Click <strong style={{ color: "#ffffff" }}>&quot;Submit for Approval&quot;</strong> above to send it to your manager.
+              </span>
+            </div>
+          </div>
         )}
 
         {/* Weightage Summary Dashboard Card */}
-        <div className="glass rounded-3xl p-8 shadow-xl border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 relative overflow-hidden">
-          <h2 className="text-lg font-extrabold text-skin-900 dark:text-skin-50 mb-6 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-accent" />
-            <span>Weightage & Alignment Distribution</span>
+        <div className="glass-card" style={{ padding: "2rem", position: "relative", overflow: "hidden" }}>
+          <h2
+            className="font-serif-display"
+            style={{
+              fontSize: "1.125rem",
+              fontWeight: 600,
+              color: "#ffffff",
+              marginBottom: "1.5rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              textShadow: "0 2px 24px rgba(0,0,0,0.45)",
+            }}
+          >
+            <TrendingUp className="w-5 h-5 text-[#30b0d0]" />
+            <span>Weightage &amp; Alignment Distribution</span>
           </h2>
 
-          <div className="flex flex-col md:flex-row items-center gap-8">
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2rem" }}>
             <WeightageChart goals={goals} />
-            
-            <div className="flex-1 w-full space-y-5">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm font-bold">
-                  <span className={Math.abs(totalWeightage - 100) < 0.01 ? "text-green-600 dark:text-green-400 font-extrabold" : "text-skin-700 dark:text-skin-200"}>
+
+            <div style={{ flex: 1, width: "100%", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem", fontWeight: 600 }}>
+                  <span style={{ color: Math.abs(totalWeightage - 100) < 0.01 ? "#4ade80" : "#ede8e4" }}>
                     Allocated Weightage: {totalWeightage.toFixed(1)}%
                   </span>
-                  <span className="text-skin-500 dark:text-skin-400">
+                  <span style={{ color: "rgba(237,232,228,0.4)" }}>
                     Remaining: {remainingWeightage.toFixed(1)}%
                   </span>
-                  <span className="text-skin-500 dark:text-skin-400">
+                  <span style={{ color: "rgba(237,232,228,0.4)" }}>
                     Total Goals: {goals.length} / 8
                   </span>
                 </div>
-                
-                {/* 3D Animated Progress Bar */}
-                <div className="relative h-4 w-full bg-skin-200 dark:bg-skin-800 rounded-full overflow-hidden p-1 shadow-inner">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-1000 ease-out shadow-md ${
-                      Math.abs(totalWeightage - 100) < 0.01 
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/50" 
-                        : totalWeightage > 100 
-                        ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/50"
-                        : "bg-gradient-to-r from-accent-light via-accent to-accent-dark shadow-accent/50"
-                    }`}
-                    style={{ width: `${Math.min(100, totalWeightage)}%` }}
-                  ></div>
+
+                {/* Progress Bar */}
+                <div style={{ position: "relative", height: "1rem", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden", padding: "2px" }}>
+                  <div
+                    style={{
+                      height: "100%",
+                      borderRadius: "9999px",
+                      transition: "all 1s ease",
+                      width: `${Math.min(100, totalWeightage)}%`,
+                      background: Math.abs(totalWeightage - 100) < 0.01
+                        ? "linear-gradient(90deg, #22c55e, #16a34a)"
+                        : totalWeightage > 100
+                        ? "linear-gradient(90deg, #ef4444, #dc2626)"
+                        : "linear-gradient(90deg, #5cc8e0, #1a8ca8)",
+                      boxShadow: Math.abs(totalWeightage - 100) < 0.01
+                        ? "0 0 12px rgba(34,197,94,0.3)"
+                        : totalWeightage > 100
+                        ? "0 0 12px rgba(239,68,68,0.3)"
+                        : "0 0 12px rgba(48,176,208,0.3)",
+                    }}
+                  />
                 </div>
               </div>
 
               {/* Requirement Hints */}
               {canEdit && (
-                <div className="flex flex-col gap-2 pt-2 border-t border-skin-200/50 dark:border-skin-800/50">
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", paddingTop: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                   {totalWeightage !== 100 && (
-                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-4 py-2.5 rounded-xl border border-amber-500/20">
+                    <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.15)", background: "rgba(245,158,11,0.05)", fontSize: "0.8125rem", fontWeight: 600 }}>
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       <span>{totalWeightage < 100 ? `Allocate ${(100 - totalWeightage).toFixed(1)}% more weightage to reach exactly 100%.` : `Reduce weightage by ${(totalWeightage - 100).toFixed(1)}% to reach exactly 100%.`}</span>
                     </div>
                   )}
                   {goals.length < 3 && (
-                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-4 py-2.5 rounded-xl border border-amber-500/20">
+                    <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.15)", background: "rgba(245,158,11,0.05)", fontSize: "0.8125rem", fontWeight: 600 }}>
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       <span>Add at least {3 - goals.length} more goal(s). A minimum of 3 goals is required.</span>
                     </div>
                   )}
                   {totalWeightage === 100 && goals.length >= 3 && (
-                    <div className="flex items-center gap-2 text-sm font-bold text-green-600 dark:text-green-400 bg-green-500/10 px-4 py-2.5 rounded-xl border border-green-500/20">
+                    <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#4ade80", border: "1px solid rgba(34,197,94,0.15)", background: "rgba(34,197,94,0.05)", fontSize: "0.8125rem", fontWeight: 700 }}>
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
                       <span>All weightage and goal count requirements successfully met.</span>
                     </div>
@@ -406,56 +466,62 @@ export function EmployeeDashboard() {
           </div>
         </div>
 
-        {/* Quarterly Check-ins Timeline - Only show when sheet is locked/approved */}
+        {/* Quarterly Check-ins Timeline */}
         {isLocked && (
-          <div className="glass rounded-3xl p-8 shadow-xl border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-skin-200/50 dark:border-skin-800/50 pb-4">
-              <h2 className="text-lg font-extrabold text-skin-900 dark:text-skin-50 flex items-center gap-2">
-                <CalendarDays className="w-5 h-5 text-accent" />
+          <div className="glass-card" style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", paddingBottom: "1rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <h2
+                className="font-serif-display"
+                style={{ fontSize: "1.125rem", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.5rem", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}
+              >
+                <CalendarDays className="w-5 h-5 text-[#30b0d0]" />
                 <span>Quarterly Performance Check-ins</span>
               </h2>
               {currentWindow?.isOpen && (
-                <Badge className="bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30 px-4 py-1.5 rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 animate-pulse">
+                <span className="alert-glass" style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem", padding: "0.375rem 0.875rem", color: "#4ade80", border: "1px solid rgba(34,197,94,0.2)", fontSize: "0.75rem", fontWeight: 700, borderRadius: "9999px", alignSelf: "flex-start" }}>
                   <Clock className="w-3.5 h-3.5" />
                   <span>{currentWindow.label} Window Open</span>
-                </Badge>
+                </span>
               )}
             </div>
 
             <QuarterTimeline goals={goals} cycle={sheet?.cycle} />
 
             {!currentWindow?.isOpen && (
-              <Alert className="glass rounded-2xl border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 shadow-md">
-                <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                <AlertDescription className="ml-2 font-medium">
+              <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.15)", background: "rgba(245,158,11,0.05)" }}>
+                <Clock className="w-5 h-5 flex-shrink-0 text-[#fbbf24]" />
+                <span className="font-sans-body" style={{ fontSize: "0.875rem" }}>
                   No check-in window is currently active. Quarterly check-ins open during scheduled review periods: Q1 (July), Q2 (October), Q3 (January), Q4 (March/April).
-                </AlertDescription>
-              </Alert>
+                </span>
+              </div>
             )}
           </div>
         )}
 
         {/* Goals Stack Header & List */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between glass px-8 py-5 rounded-2xl border border-skin-200/60 dark:border-skin-800/60 bg-white/40 dark:bg-skin-900/40 shadow-sm">
-            <h2 className="text-xl font-extrabold text-skin-900 dark:text-skin-50 flex items-center gap-3">
-              <Target className="w-6 h-6 text-accent" />
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          <div className="glass" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.25rem 2rem", borderRadius: "1rem" }}>
+            <h2
+              className="font-serif-display"
+              style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.75rem", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}
+            >
+              <Target className="w-6 h-6 text-[#30b0d0]" />
               <span>Strategic Objectives ({goals.length})</span>
             </h2>
             {canEdit && (
-              <Button 
+              <button
                 onClick={() => { setEditingGoal(null); setShowForm(true); }}
-                size="sm"
-                className="btn-3d px-5 py-4 rounded-xl bg-gradient-to-r from-accent-light to-accent-dark hover:from-accent hover:to-accent-dark text-white font-bold shadow-md shadow-accent/20 flex items-center gap-2"
+                className="login-btn login-btn-primary"
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem" }}
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Goal</span>
-              </Button>
+              </button>
             )}
           </div>
 
           {/* Goal Cards Grid / Stack */}
-          <div className="goal-stack space-y-6">
+          <div className="goal-stack" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             {goals.map((goal: any, index: number) => (
               <GoalCard
                 key={goal.id}
@@ -478,28 +544,40 @@ export function EmployeeDashboard() {
 
           {/* Empty State */}
           {goals.length === 0 && (
-            <div className="glass rounded-3xl p-16 text-center border border-dashed border-skin-300 dark:border-skin-700 bg-white/30 dark:bg-skin-900/30 shadow-xl space-y-6 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-              
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-skin-200 to-skin-300 dark:from-skin-800 dark:to-skin-700 flex items-center justify-center mx-auto shadow-2xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500">
-                <Target className="w-12 h-12 text-accent animate-pulse" />
+            <div className="empty-state" style={{ padding: "4rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem", position: "relative", overflow: "hidden" }}>
+              <div
+                style={{
+                  width: "6rem",
+                  height: "6rem",
+                  borderRadius: "1.25rem",
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                }}
+              >
+                <Target className="w-10 h-10 text-[#30b0d0] animate-pulse" />
               </div>
 
-              <div className="space-y-2 max-w-md mx-auto relative z-10">
-                <h3 className="text-2xl font-extrabold text-skin-900 dark:text-skin-50 tracking-tight">No Strategic Goals Configured</h3>
-                <p className="text-skin-600 dark:text-skin-300 text-sm leading-relaxed">
+              <div style={{ maxWidth: "28rem" }}>
+                <h3 className="font-serif-display" style={{ fontSize: "1.5rem", fontWeight: 600, color: "#ffffff", marginBottom: "0.5rem", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}>
+                  No Strategic Goals Configured
+                </h3>
+                <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)", lineHeight: 1.7 }}>
                   Begin structuring your performance roadmap by adding your first objective. You need between 3 and 8 goals totaling exactly 100% weightage.
                 </p>
               </div>
 
               {canEdit && (
-                <Button 
+                <button
                   onClick={() => { setEditingGoal(null); setShowForm(true); }}
-                  className="btn-3d px-8 py-6 rounded-2xl bg-gradient-to-r from-accent-light to-accent-dark hover:from-accent hover:to-accent-dark text-white font-bold text-base shadow-xl shadow-accent/20 flex items-center gap-3 mx-auto relative z-10"
+                  className="login-btn login-btn-primary"
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9375rem", marginTop: "0.5rem" }}
                 >
                   <Plus className="w-5 h-5" />
                   <span>Create Your First Goal</span>
-                </Button>
+                </button>
               )}
             </div>
           )}
