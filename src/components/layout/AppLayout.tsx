@@ -50,8 +50,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     setTheme(savedTheme);
     if (savedTheme === "dark") {
       document.documentElement.classList.add("dark");
+      document.getElementById("themeToggle")?.classList.add("active");
     } else {
       document.documentElement.classList.remove("dark");
+      document.getElementById("themeToggle")?.classList.remove("active");
     }
 
     // Generate floating particles
@@ -90,14 +92,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleTheme = () => {
-    if (theme === "dark") {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setTheme("light");
+    const html = document.documentElement;
+    const toggle = document.getElementById('themeToggle');
+    
+    if (html.classList.contains('dark')) {
+      html.classList.remove('dark');
+      toggle?.classList.remove('active');
+      localStorage.setItem('theme', 'light');
+      setTheme('light');
     } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setTheme("dark");
+      html.classList.add('dark');
+      toggle?.classList.add('active');
+      localStorage.setItem('theme', 'dark');
+      setTheme('dark');
     }
   };
 
@@ -239,6 +246,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               <Sun className="w-4 h-4 text-skin-400" />
               <div 
+                id="themeToggle"
                 className={`switch-3d ${theme === "dark" ? "active" : ""}`} 
                 onClick={toggleTheme}
               ></div>
