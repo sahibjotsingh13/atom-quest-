@@ -236,7 +236,7 @@ export function EmployeeDashboard() {
     return (
       <AppLayout>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "70vh" }}>
-          <Loader2 className="w-12 h-12 animate-spin text-[#30b0d0]" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#ff7043]" />
         </div>
       </AppLayout>
     );
@@ -276,7 +276,7 @@ export function EmployeeDashboard() {
               right: 0,
               width: "24rem",
               height: "24rem",
-              background: "radial-gradient(circle, rgba(48,176,208,0.06) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(255,112,67,0.06) 0%, transparent 70%)",
               borderRadius: "50%",
               pointerEvents: "none",
               marginRight: "-5rem",
@@ -311,7 +311,7 @@ export function EmployeeDashboard() {
                 flexWrap: "wrap",
               }}
             >
-              <CalendarDays className="w-4 h-4 text-[#30b0d0]" />
+              <CalendarDays className="w-4 h-4 text-[#ff7043]" />
               <span>{sheet?.cycle?.name || "Current Performance Cycle"}</span>
               <span style={{ color: "rgba(237,232,228,0.2)" }}>•</span>
               <span style={{ color: "rgba(237,232,228,0.4)" }}>Manage, align, and track your strategic objectives</span>
@@ -394,10 +394,10 @@ export function EmployeeDashboard() {
 
         {/* Submit Hint Banner */}
         {canSubmit && (
-          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.25rem 1.5rem", color: "#ede8e4", border: "1px solid rgba(48,176,208,0.2)", background: "rgba(48,176,208,0.05)" }}>
-            <Sparkles className="w-6 h-6 text-[#30b0d0] animate-bounce flex-shrink-0" />
+          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.25rem 1.5rem", color: "#ede8e4", border: "1px solid rgba(255,112,67,0.2)", background: "rgba(255,112,67,0.05)" }}>
+            <Sparkles className="w-6 h-6 text-[#ff7043] animate-bounce flex-shrink-0" />
             <div className="font-sans-body">
-              <strong style={{ display: "block", fontSize: "1rem", fontWeight: 700, marginBottom: "0.125rem", color: "#5cc8e0" }}>All Requirements Met!</strong>
+              <strong style={{ display: "block", fontSize: "1rem", fontWeight: 700, marginBottom: "0.125rem", color: "#ffab91" }}>All Requirements Met!</strong>
               <span style={{ fontSize: "0.875rem", lineHeight: 1.6 }}>
                 Your goal sheet is fully balanced and configured. Click <strong style={{ color: "#ffffff" }}>&quot;Submit for Approval&quot;</strong> above to send it to your manager.
               </span>
@@ -420,7 +420,7 @@ export function EmployeeDashboard() {
               textShadow: "0 2px 24px rgba(0,0,0,0.45)",
             }}
           >
-            <TrendingUp className="w-5 h-5 text-[#30b0d0]" />
+            <TrendingUp className="w-5 h-5 text-[#ff7043]" />
             <span>Weightage &amp; Alignment Distribution</span>
           </h2>
 
@@ -453,12 +453,12 @@ export function EmployeeDashboard() {
                         ? "linear-gradient(90deg, #22c55e, #16a34a)"
                         : totalWeightage > 100
                         ? "linear-gradient(90deg, #ef4444, #dc2626)"
-                        : "linear-gradient(90deg, #5cc8e0, #1a8ca8)",
+                        : "linear-gradient(90deg, #ffab91, #d84315)",
                       boxShadow: Math.abs(totalWeightage - 100) < 0.01
                         ? "0 0 12px rgba(34,197,94,0.3)"
                         : totalWeightage > 100
                         ? "0 0 12px rgba(239,68,68,0.3)"
-                        : "0 0 12px rgba(48,176,208,0.3)",
+                        : "0 0 12px rgba(255,112,67,0.3)",
                     }}
                   />
                 </div>
@@ -499,7 +499,7 @@ export function EmployeeDashboard() {
                 className="font-serif-display"
                 style={{ fontSize: "1.125rem", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.5rem", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}
               >
-                <CalendarDays className="w-5 h-5 text-[#30b0d0]" />
+                <CalendarDays className="w-5 h-5 text-[#ff7043]" />
                 <span>Quarterly Performance Check-ins</span>
               </h2>
               {currentWindow?.isOpen && (
@@ -530,7 +530,7 @@ export function EmployeeDashboard() {
               className="font-serif-display"
               style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.75rem", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}
             >
-              <Target className="w-6 h-6 text-[#30b0d0]" />
+              <Target className="w-6 h-6 text-[#ff7043]" />
               <span>Strategic Objectives ({goals.length})</span>
             </h2>
             {canEdit && (
@@ -582,7 +582,7 @@ export function EmployeeDashboard() {
                   boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
                 }}
               >
-                <Target className="w-10 h-10 text-[#30b0d0] animate-pulse" />
+                <Target className="w-10 h-10 text-[#ff7043] animate-pulse" />
               </div>
 
               <div style={{ maxWidth: "28rem" }}>

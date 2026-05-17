@@ -52,10 +52,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       document.getElementById("themeToggle")?.classList.remove("active");
     }
 
-    // Generate floating particles - cyan/teal for flow shader
+    // Generate floating particles - copper/peach for skin theme
     const container = document.getElementById("particles");
     if (container && container.children.length === 0) {
-      const colors = ['#30b0d0', '#1a8ca8', '#5cc8e0', '#4a8fa8', '#2d5a73', '#6bb3cc'];
+      const colors = ['#ff7043', '#ffab91', '#d84315', '#a07e6f', '#8d6e63', '#d2bab0'];
       for (let i = 0; i < 20; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
@@ -107,7 +107,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   if (status === "loading") {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#050a0f" }}>
-        <Loader2 className="w-12 h-12 animate-spin text-[#30b0d0]" />
+        <Loader2 className="w-12 h-12 animate-spin text-[#ff7043]" />
       </div>
     );
   }
@@ -207,9 +207,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   fontSize: "0.875rem",
                   transition: "all 0.3s ease",
                   textDecoration: "none",
-                  background: isActive ? "linear-gradient(90deg, rgba(48,176,208,0.12), transparent)" : "transparent",
-                  color: isActive ? "#5cc8e0" : "rgba(237,232,228,0.6)",
-                  borderLeft: isActive ? "3px solid #30b0d0" : "3px solid transparent",
+                  background: isActive ? "linear-gradient(90deg, rgba(255,112,67,0.12), transparent)" : "transparent",
+                  color: isActive ? "#ffab91" : "rgba(237,232,228,0.6)",
+                  borderLeft: isActive ? "3px solid #ff7043" : "3px solid transparent",
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
@@ -224,10 +224,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   }
                 }}
               >
-                <span style={{ color: isActive ? "#30b0d0" : "inherit", transition: "color 0.3s ease" }}>{item.icon}</span>
+                <span style={{ color: isActive ? "#ff7043" : "inherit", transition: "color 0.3s ease" }}>{item.icon}</span>
                 <span>{item.label}</span>
                 {item.label === "Approvals" && (
-                  <span style={{ marginLeft: "auto", background: "#30b0d0", color: "#050a0f", fontSize: "0.625rem", padding: "0.125rem 0.5rem", borderRadius: "9999px", fontWeight: 800 }}>
+                  <span style={{ marginLeft: "auto", background: "#ff7043", color: "#050a0f", fontSize: "0.625rem", padding: "0.125rem 0.5rem", borderRadius: "9999px", fontWeight: 800 }}>
                     3
                   </span>
                 )}

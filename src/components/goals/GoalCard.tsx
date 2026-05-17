@@ -148,18 +148,18 @@ export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn 
           {/* Details Grid */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
             <div className="glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.875rem", borderRadius: "0.75rem", background: "rgba(255,255,255,0.02)" }}>
-              <Target className="w-4 h-4 text-[#30b0d0]" />
+              <Target className="w-4 h-4 text-[#ff7043]" />
               <span className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", fontWeight: 500 }}>Target:</span>
               <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#ede8e4" }}>{formatTarget()}</span>
             </div>
             <div className="glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.875rem", borderRadius: "0.75rem", background: "rgba(255,255,255,0.02)" }}>
-              <TrendingUp className="w-4 h-4 text-[#30b0d0]" />
+              <TrendingUp className="w-4 h-4 text-[#ff7043]" />
               <span className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", fontWeight: 500 }}>Weightage:</span>
-              <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#5cc8e0" }}>{goal.weightage}%</span>
+              <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#ffab91" }}>{goal.weightage}%</span>
             </div>
             {goal.thrustArea && (
               <div className="glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.875rem", borderRadius: "0.75rem", background: "rgba(255,255,255,0.02)" }}>
-                <Calendar className="w-4 h-4 text-[#30b0d0]" />
+                <Calendar className="w-4 h-4 text-[#ff7043]" />
                 <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 600, color: "rgba(237,232,228,0.8)" }}>{goal.thrustArea.name}</span>
               </div>
             )}
@@ -170,7 +170,7 @@ export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn 
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", paddingTop: "0.5rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8125rem", fontWeight: 600 }}>
                 <span className="font-sans-body" style={{ color: "rgba(237,232,228,0.6)" }}>Overall Progress</span>
-                <span className="font-sans-body" style={{ color: "#5cc8e0" }}>{Number(goal.progressScore).toFixed(1)}%</span>
+                <span className="font-sans-body" style={{ color: "#ffab91" }}>{Number(goal.progressScore).toFixed(1)}%</span>
               </div>
               <div style={{ position: "relative", height: "0.75rem", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden", padding: "1px" }}>
                 <div
@@ -179,8 +179,8 @@ export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn 
                     borderRadius: "9999px",
                     transition: "all 1s ease",
                     width: `${Math.min(100, Math.max(0, Number(goal.progressScore)))}%`,
-                    background: "linear-gradient(90deg, #5cc8e0, #1a8ca8)",
-                    boxShadow: "0 0 12px rgba(48,176,208,0.3)",
+                    background: "linear-gradient(90deg, #ffab91, #d84315)",
+                    boxShadow: "0 0 12px rgba(255,112,67,0.3)",
                   }}
                 />
               </div>

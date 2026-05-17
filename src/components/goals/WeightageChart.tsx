@@ -6,16 +6,16 @@ interface WeightageChartProps {
 }
 
 export function WeightageChart({ goals }: WeightageChartProps) {
-  // 3-Flow-Shader Cyan Palette Colors
+  // Premium Copper/Peach Skin Palette Colors
   const colors = [
-    "#30b0d0", // accent-default
-    "#5cc8e0", // accent-light
-    "#1a8ca8", // accent-dark
-    "#4a8fa8", // skin-400
-    "#6bb3cc", // skin-300
-    "#2d5a73", // skin-500
-    "#9dd1e0", // skin-200
-    "#1e3a4d", // skin-600
+    "#ff7043", // accent-default
+    "#ffab91", // accent-light
+    "#d84315", // accent-dark
+    "#a07e6f", // skin-500
+    "#8d6e63", // skin-600
+    "#d2bab0", // skin-400
+    "#e0cec7", // skin-300
+    "#eaddd7", // skin-200
   ];
   
   const total = goals.reduce((sum, g) => sum + Number(g.weightage), 0);
@@ -33,7 +33,7 @@ export function WeightageChart({ goals }: WeightageChartProps) {
   return (
     <div className="progress-ring-3d relative w-28 h-28 flex items-center justify-center group">
       {/* 3D Holographic Glow Base */}
-      <div className="absolute inset-0 rounded-full blur-xl transition-all duration-500" style={{ background: "rgba(48,176,208,0.08)" }}></div>
+      <div className="absolute inset-0 rounded-full blur-xl transition-all duration-500" style={{ background: "rgba(255,112,67,0.08)" }}></div>
 
       <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.15)] relative z-10">
         {/* Background circle */}

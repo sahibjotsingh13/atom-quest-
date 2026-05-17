@@ -791,8 +791,8 @@
 }
 
 .login-input:focus {
-  border-color: #30b0d0;
-  box-shadow: 0 0 15px rgba(48, 176, 208, 0.25);
+  border-color: #ff7043;
+  box-shadow: 0 0 15px rgba(255, 112, 67, 0.25);
   background: rgba(5, 10, 15, 0.8);
 }
 
@@ -810,18 +810,18 @@
 }
 
 .login-btn-primary {
-  background: linear-gradient(135deg, #30b0d0, #1a8ca8);
+  background: linear-gradient(135deg, #ff7043, #d84315);
   color: #ffffff;
-  box-shadow: 0 8px 25px rgba(48, 176, 208, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 112, 67, 0.3);
 }
 
 .login-btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(48, 176, 208, 0.4);
-  background: linear-gradient(135deg, #42c2e2, #209ebc);
+  box-shadow: 0 12px 30px rgba(255, 112, 67, 0.4);
+  background: linear-gradient(135deg, #ff8a65, #e64a19);
 }
 
 .login-btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 4px 15px rgba(48, 176, 208, 0.2);
+  box-shadow: 0 4px 15px rgba(255, 112, 67, 0.25);
 }
