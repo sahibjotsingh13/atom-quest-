@@ -59,5 +59,17 @@
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "@react-three/drei": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "@react-three/fiber": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
