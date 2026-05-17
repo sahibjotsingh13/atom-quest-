@@ -39,11 +39,14 @@ export function EmployeeDashboard() {
   const [success, setSuccess] = useState("");
 
   // Fetch goal sheet
-  const { data: sheet, isLoading } = useQuery({
+  const { data: sheet, isLoading, isError, error: queryError } = useQuery({
     queryKey: ["goalSheet"],
     queryFn: async () => {
       const res = await fetch("/api/employee/sheet");
-      if (!res.ok) throw new Error("Failed to fetch goal sheet");
+      if (!res.ok) {
+        const errMsg = await res.text();
+        throw new Error(errMsg || "Failed to fetch goal sheet");
+      }
       return res.json();
     },
   });
@@ -234,6 +237,28 @@ export function EmployeeDashboard() {
       <AppLayout>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "70vh" }}>
           <Loader2 className="w-12 h-12 animate-spin text-[#30b0d0]" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (isError) {
+    return (
+      <AppLayout>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", padding: "2rem", gap: "1.5rem" }}>
+          <div className="glass-card" style={{ maxWidth: "36rem", width: "100%", padding: "2.5rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.02)" }}>
+            <div style={{ width: "4rem", height: "4rem", borderRadius: "1rem", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <AlertCircle className="w-8 h-8 text-[#f87171]" />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <h3 className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff" }}>
+                Goal Sheet Unavailable
+              </h3>
+              <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)", lineHeight: 1.6 }}>
+                {queryError?.message || "There is no active goal setting cycle configured at this moment. Please check back later or contact your system administrator."}
+              </p>
+            </div>
+          </div>
         </div>
       </AppLayout>
     );
