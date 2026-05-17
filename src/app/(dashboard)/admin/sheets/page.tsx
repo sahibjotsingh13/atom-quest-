@@ -4,37 +4,16 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Loader2, Search, Lock, Unlock, FileText, Filter } from "lucide-react";
+import { Loader2, Search, Lock, Unlock, FileText, Filter, Sparkles } from "lucide-react";
 import { format } from "date-fns";
+
+const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
+  draft:        { bg: "rgba(255,255,255,0.06)",  text: "rgba(237,232,228,0.5)" },
+  submitted:    { bg: "rgba(59,130,246,0.15)",   text: "#60a5fa" },
+  under_review: { bg: "rgba(168,85,247,0.15)",   text: "#c084fc" },
+  approved:     { bg: "rgba(34,197,94,0.15)",    text: "#22c55e" },
+  locked:       { bg: "rgba(245,158,11,0.15)",   text: "#fbbf24" },
+};
 
 export default function AdminSheetsPage() {
   const queryClient = useQueryClient();
@@ -83,177 +62,191 @@ export default function AdminSheetsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const statusColors: Record<string, string> = {
-    draft: "bg-slate-100 text-slate-600",
-    submitted: "bg-blue-100 text-blue-700",
-    under_review: "bg-purple-100 text-purple-700",
-    approved: "bg-green-100 text-green-700",
-    locked: "bg-amber-100 text-amber-700",
-  };
-
-  const handleUnlockClick = (sheet: any) => {
-    setSelectedSheet(sheet);
-    setIsUnlockDialogOpen(true);
-  };
-
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Organization Goal Sheets</h1>
-            <p className="text-slate-500">Manage and monitor all employee goal sheets</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "80rem", margin: "0 auto" }}>
+        {/* Header */}
+        <div className="hero-banner">
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
+              <Sparkles className="w-5 h-5 text-[#30b0d0]" />
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#30b0d0", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Admin
+              </span>
+            </div>
+            <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "#ffffff", marginBottom: "0.25rem" }}>
+              Organisation Goal Sheets
+            </h1>
+            <p style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)" }}>
+              Manage and monitor all employee goal sheets
+            </p>
           </div>
         </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input
-                  placeholder="Search by name or ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-slate-400" />
-                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v || "all")}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="All Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="submitted">Submitted</SelectItem>
-                    <SelectItem value="under_review">Under Review</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="locked">Locked</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Filters */}
+        <div className="glass" style={{ padding: "1rem 1.25rem", borderRadius: "1rem", display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ position: "relative", flex: 1, minWidth: "12rem" }}>
+            <Search className="w-4 h-4 text-[#30b0d0]" style={{ position: "absolute", left: "0.875rem", top: "50%", transform: "translateY(-50%)" }} />
+            <input
+              className="login-input"
+              placeholder="Search by name or employee ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: "100%", paddingLeft: "2.5rem", fontSize: "0.875rem" }}
+            />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+            <Filter className="w-4 h-4 text-[#30b0d0]" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="login-input"
+              style={{ fontSize: "0.875rem", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}
+            >
+              <option value="all">All Status</option>
+              <option value="draft">Draft</option>
+              <option value="submitted">Submitted</option>
+              <option value="under_review">Under Review</option>
+              <option value="approved">Approved</option>
+              <option value="locked">Locked</option>
+            </select>
+          </div>
+        </div>
 
+        {/* Table */}
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "16rem" }}>
+            <Loader2 className="w-8 h-8 animate-spin text-[#30b0d0]" />
           </div>
         ) : (
-          <Card>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Cycle</TableHead>
-                    <TableHead>Goals</TableHead>
-                    <TableHead>Weightage</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSheets.map((sheet: any) => (
-                    <TableRow key={sheet.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">
-                            {sheet.employee.firstName} {sheet.employee.lastName}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {sheet.employee.employeeId} · {sheet.employee.department?.name || "No Dept"}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{sheet.cycle.name}</TableCell>
-                      <TableCell>{sheet.goals.length}</TableCell>
-                      <TableCell>{Number(sheet.totalWeightage).toFixed(0)}%</TableCell>
-                      <TableCell>
-                        <Badge className={statusColors[sheet.status]}>
-                          {sheet.status.replace(/_/g, " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {sheet.status === "locked" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-amber-600 border-amber-200 hover:bg-amber-50"
-                            onClick={() => handleUnlockClick(sheet)}
-                          >
-                            <Unlock className="w-3.5 h-3.5 mr-1" />
-                            Unlock
-                          </Button>
-                        )}
-                        {sheet.status !== "locked" && (
-                          <div className="flex items-center text-slate-400 text-xs gap-1">
-                            <Lock className="w-3 h-3" />
-                            Editable
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          <div className="glass" style={{ borderRadius: "1rem", overflow: "hidden" }}>
+            <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: "0.625rem" }}>
+              <FileText className="w-4 h-4 text-[#30b0d0]" />
+              <h2 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#ede8e4" }}>
+                {filteredSheets.length} sheet{filteredSheets.length !== 1 ? "s" : ""}
+              </h2>
             </div>
-            {filteredSheets.length === 0 && (
-              <div className="text-center py-12">
-                <FileText className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                <p className="text-slate-500">No goal sheets found matching your criteria</p>
+            {filteredSheets.length === 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "4rem", gap: "0.75rem" }}>
+                <FileText className="w-12 h-12 text-[rgba(237,232,228,0.1)]" />
+                <p style={{ fontSize: "0.9375rem", color: "rgba(237,232,228,0.35)" }}>No goal sheets found matching your criteria</p>
+              </div>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      {["Employee", "Cycle", "Goals", "Weightage", "Status", "Actions"].map((h) => (
+                        <th key={h} style={{ padding: "0.75rem 1rem", textAlign: "left", fontSize: "0.6875rem", fontWeight: 700, color: "rgba(237,232,228,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredSheets.map((sheet: any, idx: number) => {
+                      const s = STATUS_STYLE[sheet.status] ?? STATUS_STYLE.draft;
+                      return (
+                        <tr
+                          key={sheet.id}
+                          style={{ borderBottom: idx < filteredSheets.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", transition: "background 0.2s ease" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.025)"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                        >
+                          <td style={{ padding: "0.875rem 1rem" }}>
+                            <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "#ede8e4" }}>
+                              {sheet.employee.firstName} {sheet.employee.lastName}
+                            </p>
+                            <p style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", marginTop: "0.125rem" }}>
+                              {sheet.employee.employeeId} · {sheet.employee.department?.name || "No Dept"}
+                            </p>
+                          </td>
+                          <td style={{ padding: "0.875rem 1rem", fontSize: "0.8125rem", color: "rgba(237,232,228,0.65)" }}>{sheet.cycle.name}</td>
+                          <td style={{ padding: "0.875rem 1rem", fontSize: "0.8125rem", color: "rgba(237,232,228,0.7)", fontWeight: 500 }}>{sheet.goals.length}</td>
+                          <td style={{ padding: "0.875rem 1rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <div style={{ width: "3.5rem", height: "0.3rem", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden" }}>
+                                <div style={{ width: `${Math.min(Number(sheet.totalWeightage), 100)}%`, height: "100%", background: "linear-gradient(90deg, #30b0d0, #5cc8e0)", borderRadius: "9999px" }} />
+                              </div>
+                              <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#30b0d0" }}>{Number(sheet.totalWeightage).toFixed(0)}%</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: "0.875rem 1rem" }}>
+                            <span style={{ fontSize: "0.6875rem", fontWeight: 700, padding: "0.25rem 0.625rem", borderRadius: "9999px", background: s.bg, color: s.text, textTransform: "capitalize" }}>
+                              {sheet.status.replace(/_/g, " ")}
+                            </span>
+                          </td>
+                          <td style={{ padding: "0.875rem 1rem" }}>
+                            {sheet.status === "locked" ? (
+                              <button
+                                onClick={() => { setSelectedSheet(sheet); setIsUnlockDialogOpen(true); }}
+                                style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.375rem 0.875rem", borderRadius: "0.5rem", background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", color: "#fbbf24", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}
+                              >
+                                <Unlock className="w-3.5 h-3.5" /> Unlock
+                              </button>
+                            ) : (
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.8125rem", color: "rgba(237,232,228,0.25)" }}>
+                                <Lock className="w-3.5 h-3.5" /> Editable
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
-          </Card>
+          </div>
         )}
       </div>
 
       {/* Unlock Dialog */}
-      <Dialog open={isUnlockDialogOpen} onOpenChange={setIsUnlockDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Unlock Goal Sheet</DialogTitle>
-            <DialogDescription>
-              This will return the sheet for {selectedSheet?.employee.firstName} to 'Approved' status,
-              allowing the employee to make further check-ins or edits.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Reason for Unlocking (required)</Label>
-              <Textarea
+      {isUnlockDialogOpen && selectedSheet && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(5,10,15,0.7)", backdropFilter: "blur(6px)" }} onClick={() => setIsUnlockDialogOpen(false)} />
+          <div className="glass" style={{ position: "relative", zIndex: 1, borderRadius: "1.25rem", padding: "2rem", width: "90%", maxWidth: "28rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <div>
+              <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#ede8e4", marginBottom: "0.375rem" }}>Unlock Goal Sheet</h2>
+              <p style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)" }}>
+                This will return {selectedSheet.employee.firstName}'s sheet to Approved status, allowing further check-ins or edits.
+              </p>
+            </div>
+            <div>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.5rem" }}>
+                Reason for Unlocking (required)
+              </label>
+              <textarea
+                className="login-input"
                 placeholder="e.g., Requested revision for Q1 targets..."
                 value={unlockReason}
                 onChange={(e) => setUnlockReason(e.target.value)}
                 rows={3}
+                style={{ width: "100%", resize: "vertical", padding: "0.75rem 1rem", fontSize: "0.875rem" }}
               />
-              <p className="text-[10px] text-slate-400">
-                Minimum 10 characters. This will be recorded in the audit log and sent to the employee.
+              <p style={{ fontSize: "0.6875rem", color: "rgba(237,232,228,0.3)", marginTop: "0.375rem" }}>
+                Minimum 10 characters. Recorded in audit log and sent to employee.
               </p>
             </div>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setIsUnlockDialogOpen(false)}
+                style={{ padding: "0.625rem 1.25rem", borderRadius: "0.625rem", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(237,232,228,0.7)", fontSize: "0.875rem", fontWeight: 600, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={unlockReason.trim().length < 10 || unlockSheet.isPending}
+                onClick={() => unlockSheet.mutate({ sheetId: selectedSheet.id, reason: unlockReason })}
+                style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.625rem 1.25rem", borderRadius: "0.625rem", background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.25)", color: "#fbbf24", fontSize: "0.875rem", fontWeight: 700, cursor: unlockReason.trim().length < 10 ? "not-allowed" : "pointer", opacity: unlockReason.trim().length < 10 ? 0.5 : 1 }}
+              >
+                {unlockSheet.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlock className="w-4 h-4" />}
+                Confirm Unlock
+              </button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsUnlockDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={unlockReason.trim().length < 10 || unlockSheet.isPending}
-              onClick={() => unlockSheet.mutate({ sheetId: selectedSheet.id, reason: unlockReason })}
-            >
-              {unlockSheet.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Unlock className="w-4 h-4 mr-2" />
-              )}
-              Confirm Unlock
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </AppLayout>
   );
 }
