@@ -6,14 +6,24 @@ interface WeightageChartProps {
 }
 
 export function WeightageChart({ goals }: WeightageChartProps) {
-  const colors = ["#2563eb", "#059669", "#d97706", "#dc2626", "#7c3aed", "#db2777", "#0891b2", "#65a30d"];
+  // Premium 3D Portal Palette Colors
+  const colors = [
+    "#ff7043", // accent
+    "#a07e6f", // skin-500
+    "#ffab91", // accent-light
+    "#8d6e63", // skin-600
+    "#d84315", // accent-dark
+    "#d2bab0", // skin-400
+    "#6d4c41", // skin-700
+    "#e0cec7", // skin-300
+  ];
   
   const total = goals.reduce((sum, g) => sum + Number(g.weightage), 0);
 
   if (goals.length === 0) {
     return (
-      <div className="w-24 h-24 rounded-full border-4 border-slate-200 flex items-center justify-center">
-        <span className="text-xs text-slate-400">0%</span>
+      <div className="progress-ring-3d w-28 h-28 rounded-full glass border-4 border-skin-200 dark:border-skin-800 flex items-center justify-center shadow-lg">
+        <span className="text-sm font-bold text-skin-400 dark:text-skin-500">0%</span>
       </div>
     );
   }
@@ -21,16 +31,19 @@ export function WeightageChart({ goals }: WeightageChartProps) {
   let cumulativePercent = 0;
 
   return (
-    <div className="relative w-24 h-24">
-      <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
+    <div className="progress-ring-3d relative w-28 h-28 flex items-center justify-center group">
+      {/* 3D Holographic Glow Base */}
+      <div className="absolute inset-0 rounded-full bg-accent/10 blur-xl group-hover:bg-accent/20 transition-all duration-500"></div>
+
+      <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.15)] relative z-10">
         {/* Background circle */}
         <circle
           cx="18"
           cy="18"
           r="15.915"
           fill="none"
-          stroke="#e2e8f0"
-          strokeWidth="3"
+          stroke="rgba(160,126,111,0.15)"
+          strokeWidth="3.5"
         />
         {/* Segments */}
         {goals.map((goal, i) => {
@@ -47,10 +60,11 @@ export function WeightageChart({ goals }: WeightageChartProps) {
               r="15.915"
               fill="none"
               stroke={colors[i % colors.length]}
-              strokeWidth="3"
+              strokeWidth="3.5"
               strokeDasharray={dashArray}
               strokeDashoffset={dashOffset}
-              className="transition-all duration-500"
+              className="transition-all duration-1000 ease-out hover:stroke-[4.5] cursor-pointer"
+              strokeLinecap="round"
             />
           );
         })}
@@ -61,15 +75,18 @@ export function WeightageChart({ goals }: WeightageChartProps) {
             cy="18"
             r="15.915"
             fill="none"
-            stroke="#f1f5f9"
-            strokeWidth="3"
+            stroke="rgba(255,112,67,0.1)"
+            strokeWidth="3.5"
             strokeDasharray={`${100 - total} ${total}`}
             strokeDashoffset={-total}
           />
         )}
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-sm font-bold text-slate-700">{total.toFixed(0)}%</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center relative z-20 pointer-events-none">
+        <span className="text-lg font-extrabold bg-gradient-to-r from-skin-900 to-accent dark:from-skin-50 dark:to-accent-light bg-clip-text text-transparent">
+          {total.toFixed(0)}%
+        </span>
+        <span className="text-[9px] font-semibold text-skin-500 dark:text-skin-400 uppercase tracking-widest">Allocated</span>
       </div>
     </div>
   );
