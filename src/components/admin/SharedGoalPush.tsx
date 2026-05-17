@@ -148,55 +148,60 @@ export function SharedGoalPush() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Share2 className="w-5 h-5" />
+    <div className="glass rounded-2xl p-6 md:p-8 bg-skin-900/60 border border-skin-800 shadow-lg relative overflow-hidden font-sans-body">
+      <div className="absolute -right-20 -top-20 w-60 h-60 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="flex items-center gap-3.5 pb-6 border-b border-skin-800 mb-6">
+        <div className="p-3.5 bg-accent/10 rounded-xl border border-accent/20 shadow-inner">
+          <Share2 className="w-6 h-6 text-accent-light" />
+        </div>
+        <h2 className="text-2xl font-serif-display font-bold text-skin-50 bg-gradient-to-r from-skin-50 to-accent-light bg-clip-text text-transparent tracking-tight">
           Push Shared Goal (Departmental KPI)
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </h2>
+      </div>
+
+      <div className="space-y-6 max-w-4xl">
         {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="bg-red-950/50 border border-red-800 text-red-200 font-sans-body shadow-inner">
+            <AlertCircle className="h-4 w-4 text-red-400" />
+            <AlertDescription className="font-semibold">{error}</AlertDescription>
           </Alert>
         )}
 
         {success && (
-          <Alert className="mb-4 bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">{success}</AlertDescription>
+          <Alert className="bg-green-950/40 border border-green-800/80 text-emerald-300 font-sans-body shadow-inner">
+            <CheckCircle className="h-4 w-4 text-emerald-400" />
+            <AlertDescription className="font-bold tracking-wide">{success}</AlertDescription>
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6 font-sans-body">
           {/* Goal Details */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label>
-                Goal Title <span className="text-red-500">*</span>
+              <Label className="text-skin-200 font-medium">
+                Goal Title <span className="text-accent-light">*</span>
               </Label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="e.g., Reduce Customer Churn Rate"
+                className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:ring-accent-default focus:border-accent-default shadow-sm py-5 text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label>
-                Thrust Area <span className="text-red-500">*</span>
+              <Label className="text-skin-200 font-medium">
+                Thrust Area <span className="text-accent-light">*</span>
               </Label>
               <Select
                 value={formData.thrustAreaId}
                 onValueChange={(v) => setFormData({ ...formData, thrustAreaId: v || "" })}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select..." />
+                <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100 focus:ring-accent-default focus:border-accent-default shadow-sm py-5 text-base">
+                  <SelectValue placeholder="Select Thrust Area..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-skin-900 border-skin-700 text-skin-100 shadow-xl shadow-black/40">
                   {thrustAreas.map((ta: any) => (
-                    <SelectItem key={ta.id} value={ta.id}>
+                    <SelectItem key={ta.id} value={ta.id} className="focus:bg-skin-800 focus:text-skin-50 py-2.5">
                       {ta.name}
                     </SelectItem>
                   ))}
@@ -206,30 +211,31 @@ export function SharedGoalPush() {
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label className="text-skin-200 font-medium">Description</Label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe the departmental KPI..."
-              rows={2}
+              placeholder="Describe the departmental KPI, objectives, and success criteria in detail..."
+              rows={3}
+              className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:ring-accent-default focus:border-accent-default shadow-sm text-base"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label>
-                UoM Type <span className="text-red-500">*</span>
+              <Label className="text-skin-200 font-medium">
+                UoM Type <span className="text-accent-light">*</span>
               </Label>
               <Select
                 value={formData.uomTypeId}
                 onValueChange={(v) => setFormData({ ...formData, uomTypeId: v || "" })}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select..." />
+                <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100 focus:ring-accent-default focus:border-accent-default shadow-sm py-5 text-base">
+                  <SelectValue placeholder="Select UoM Type..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-skin-900 border-skin-700 text-skin-100 shadow-xl shadow-black/40">
                   {uomTypes.map((u: any) => (
-                    <SelectItem key={u.id} value={u.id}>
+                    <SelectItem key={u.id} value={u.id} className="focus:bg-skin-800 focus:text-skin-50 py-2.5">
                       {u.name}
                     </SelectItem>
                   ))}
@@ -237,8 +243,8 @@ export function SharedGoalPush() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>
-                Weightage (%) <span className="text-red-500">*</span>
+              <Label className="text-skin-200 font-medium">
+                Weightage (%) <span className="text-accent-light">*</span>
               </Label>
               <Input
                 type="number"
@@ -247,44 +253,47 @@ export function SharedGoalPush() {
                 value={formData.weightage}
                 onChange={(e) => setFormData({ ...formData, weightage: e.target.value })}
                 placeholder="e.g., 20"
+                className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:ring-accent-default focus:border-accent-default shadow-sm py-5 text-base"
               />
             </div>
           </div>
 
           {/* Target — numeric or date depending on UoM */}
-          <div className="space-y-2">
+          <div className="space-y-2 max-w-md">
             {isTimeline ? (
               <>
-                <Label>Target Date</Label>
+                <Label className="text-skin-200 font-medium">Target Date</Label>
                 <Input
                   type="date"
                   value={formData.targetDate}
                   onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
+                  className="bg-skin-950 border-skin-700 text-skin-100 focus:ring-accent-default focus:border-accent-default shadow-sm py-5 text-base"
                 />
               </>
             ) : (
               <>
-                <Label>Target Value</Label>
+                <Label className="text-skin-200 font-medium">Target Value</Label>
                 <Input
                   type="number"
                   value={formData.targetValue}
                   onChange={(e) => setFormData({ ...formData, targetValue: e.target.value })}
                   placeholder="e.g., 95"
+                  className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:ring-accent-default focus:border-accent-default shadow-sm py-5 text-base"
                 />
               </>
             )}
           </div>
 
           {/* Target Audience Toggle */}
-          <div className="border border-slate-200 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-4">
+          <div className="glass p-6 rounded-2xl bg-skin-800/30 border border-skin-700 space-y-6 shadow-inner">
+            <div className="flex flex-wrap items-center gap-4 pb-4 border-b border-skin-700/60">
               <button
                 type="button"
                 onClick={() => setUseDepartment(true)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
                   useDepartment
-                    ? "bg-primary text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-accent-default text-white shadow-lg shadow-accent-default/20 ring-2 ring-accent/30"
+                    : "bg-skin-900 text-skin-400 hover:bg-skin-800 hover:text-skin-100 border border-skin-700"
                 }`}
               >
                 <Building2 className="w-4 h-4" />
@@ -293,10 +302,10 @@ export function SharedGoalPush() {
               <button
                 type="button"
                 onClick={() => setUseDepartment(false)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
                   !useDepartment
-                    ? "bg-primary text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-accent-default text-white shadow-lg shadow-accent-default/20 ring-2 ring-accent/30"
+                    : "bg-skin-900 text-skin-400 hover:bg-skin-800 hover:text-skin-100 border border-skin-700"
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -305,18 +314,21 @@ export function SharedGoalPush() {
             </div>
 
             {useDepartment ? (
-              <div className="space-y-2">
-                <Label>Department</Label>
+              <div className="space-y-2 max-w-md">
+                <Label className="text-skin-200 font-medium">Select Target Department</Label>
                 <Select
                   value={formData.departmentId}
                   onValueChange={(v) => setFormData({ ...formData, departmentId: v || "" })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All departments..." />
+                  <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100 focus:ring-accent-default focus:border-accent-default shadow-sm py-5 text-base">
+                    <SelectValue placeholder="All departments (Organization-wide)..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-skin-900 border-skin-700 text-skin-100 shadow-xl shadow-black/40">
+                    <SelectItem value="" className="focus:bg-skin-800 focus:text-skin-50 py-2.5 font-bold text-accent-light">
+                      🏢 All Departments (Org-wide KPI)
+                    </SelectItem>
                     {departments.map((d: any) => (
-                      <SelectItem key={d.id} value={d.id}>
+                      <SelectItem key={d.id} value={d.id} className="focus:bg-skin-800 focus:text-skin-50 py-2.5 font-semibold">
                         {d.name}
                       </SelectItem>
                     ))}
@@ -324,38 +336,39 @@ export function SharedGoalPush() {
                 </Select>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>Select Employees</Label>
+                  <Label className="text-skin-200 font-medium">Select Specific Employees</Label>
                   {selectedEmployees.length > 0 && (
-                    <Badge className="bg-primary/10 text-primary">
-                      {selectedEmployees.length} selected
+                    <Badge className="bg-[#5cc8e0]/20 text-[#5cc8e0] border border-[#5cc8e0]/30 px-3 py-1 rounded-lg font-bold text-xs">
+                      {selectedEmployees.length} employee{selectedEmployees.length > 1 ? 's' : ''} selected
                     </Badge>
                   )}
                 </div>
-                <div className="max-h-48 overflow-y-auto space-y-2 border border-slate-200 rounded-lg p-2">
+                <div className="max-h-60 overflow-y-auto space-y-2 border border-skin-700 rounded-xl p-3 bg-skin-950/60 shadow-inner">
                   {employees.map((emp: any) => (
                     <div
                       key={emp.id}
-                      className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer"
+                      className="flex items-center gap-4 p-3 hover:bg-skin-800/40 rounded-xl cursor-pointer border border-transparent hover:border-skin-700 transition-all duration-300"
                       onClick={() => toggleEmployee(emp.id)}
                     >
                       <Checkbox
                         checked={selectedEmployees.includes(emp.id)}
                         onCheckedChange={() => toggleEmployee(emp.id)}
+                        className="border-skin-600 data-[state=checked]:bg-accent-default data-[state=checked]:border-accent-default"
                       />
                       <div>
-                        <p className="text-sm font-medium">
+                        <p className="text-base font-bold text-skin-50">
                           {emp.firstName} {emp.lastName}
                         </p>
-                        <p className="text-xs text-slate-500">
-                          {emp.employeeId} · {emp.department?.name || "—"}
+                        <p className="text-xs font-semibold text-skin-400 pt-0.5">
+                          ID: {emp.employeeId} <span className="mx-1 text-skin-600">•</span> {emp.department?.name || "No Dept"}
                         </p>
                       </div>
                     </div>
                   ))}
                   {employees.length === 0 && (
-                    <p className="text-sm text-slate-400 text-center py-4">No employees found</p>
+                    <p className="text-sm text-skin-500 text-center py-8 font-medium">No active employees found in the master database</p>
                   )}
                 </div>
               </div>
@@ -364,35 +377,40 @@ export function SharedGoalPush() {
 
           {/* Weightage Progress Preview */}
           {formData.weightage && (
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>Goal Weightage</span>
-                <span>{formData.weightage}%</span>
+            <div className="space-y-2 glass p-4 rounded-xl bg-skin-800/20 border border-skin-800/80 max-w-md shadow-inner">
+              <div className="flex justify-between text-xs font-bold text-skin-300">
+                <span>Goal Weightage Allocation</span>
+                <span className="text-accent-light">{formData.weightage}%</span>
               </div>
-              <Progress value={parseFloat(formData.weightage) || 0} className="h-1.5" />
+              <div className="relative w-full bg-skin-800 rounded-full h-2 overflow-hidden p-0.5 shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-accent-light to-accent-dark rounded-full transition-all duration-500 shadow-[0_0_12px_rgba(48,176,208,0.5)]"
+                  style={{ width: `${Math.min(100, parseFloat(formData.weightage) || 0)}%` }}
+                />
+              </div>
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={pushGoal.isPending}>
+          <Button type="submit" className="w-full bg-accent-default hover:bg-accent-dark text-white font-bold shadow-xl shadow-accent-default/20 rounded-xl py-6 text-base tracking-wide" disabled={pushGoal.isPending}>
             {pushGoal.isPending ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Pushing Goal...
+                <Loader2 className="w-5 h-5 mr-2.5 animate-spin" />
+                Pushing Shared KPI Across Portal...
               </>
             ) : (
               <>
-                <Share2 className="w-4 h-4 mr-2" />
-                Push to{" "}
+                <Share2 className="w-5 h-5 mr-2.5" />
+                Push KPI to{" "}
                 {useDepartment
                   ? formData.departmentId
                     ? departments.find((d: any) => d.id === formData.departmentId)?.name || "Department"
-                    : "All Departments"
-                  : `${selectedEmployees.length} Employee${selectedEmployees.length !== 1 ? "s" : ""}`}
+                    : "All Company Departments"
+                  : `${selectedEmployees.length} Selected Employee${selectedEmployees.length !== 1 ? "s" : ""}`}
               </>
             )}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
