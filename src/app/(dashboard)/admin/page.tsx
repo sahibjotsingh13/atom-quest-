@@ -3,10 +3,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Users,
   FileText,
@@ -18,9 +14,11 @@ import {
   Lock,
   AlertTriangle,
   History,
+  Sparkles,
+  Shield,
 } from "lucide-react";
 
-export default function AdminDashboard() {
+export default function AdminOverviewPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["adminAnalytics"],
     queryFn: async () => {
@@ -33,8 +31,8 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-96">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "24rem" }}>
+          <Loader2 className="w-8 h-8 animate-spin text-[#30b0d0]" />
         </div>
       </AppLayout>
     );
@@ -42,209 +40,181 @@ export default function AdminDashboard() {
 
   const { overview, checkIns, goals, thrustAreas, cycle } = data || {};
 
-  const statusColors: Record<string, string> = {
-    not_started: "bg-slate-100 text-slate-600",
-    on_track: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
-    at_risk: "bg-amber-100 text-amber-700",
+  const statusColorMap: Record<string, { bg: string; text: string }> = {
+    not_started: { bg: "rgba(255,255,255,0.06)", text: "rgba(237,232,228,0.4)" },
+    on_track:    { bg: "rgba(59,130,246,0.15)",  text: "#60a5fa" },
+    completed:   { bg: "rgba(34,197,94,0.15)",   text: "#22c55e" },
+    at_risk:     { bg: "rgba(245,158,11,0.15)",  text: "#fbbf24" },
   };
+
+  const quickActions = [
+    { label: "Push Shared Goals", href: "/admin/shared-goals", icon: <Target className="w-5 h-5" />, color: "#30b0d0" },
+    { label: "Manage Sheets",    href: "/admin/sheets",        icon: <FileText className="w-5 h-5" />, color: "#a78bfa" },
+    { label: "Manage Cycles",   href: "/admin/cycles",         icon: <History className="w-5 h-5" />, color: "#f59e0b" },
+    { label: "View Escalations",href: "/admin/escalations",    icon: <AlertTriangle className="w-5 h-5" />, color: "#f87171" },
+  ];
+
+  const statCards = [
+    { label: "Total Employees", value: overview?.totalEmployees ?? 0,  icon: <Users className="w-5 h-5" />,      color: "#30b0d0" },
+    { label: "Submitted",       value: overview?.sheetsSubmitted ?? 0,  icon: <FileText className="w-5 h-5" />,   color: "#f59e0b", sub: `${overview?.submissionRate ?? 0}% rate` },
+    { label: "Approved",        value: overview?.sheetsApproved ?? 0,   icon: <CheckCircle className="w-5 h-5" />, color: "#22c55e" },
+    { label: "Locked",          value: overview?.sheetsLocked ?? 0,     icon: <Lock className="w-5 h-5" />,       color: "#a78bfa" },
+  ];
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "80rem", margin: "0 auto" }}>
         {/* Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
-            <p className="text-slate-500">
+        <div className="hero-banner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
+              <Sparkles className="w-5 h-5 text-[#30b0d0]" />
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#30b0d0", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Admin Control Center
+              </span>
+            </div>
+            <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "#ffffff", marginBottom: "0.25rem" }}>
+              Admin Dashboard
+            </h1>
+            <p style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)" }}>
               {cycle ? `${cycle.name} · FY ${cycle.fiscalYear}` : "No active cycle"}
             </p>
           </div>
-          {cycle && <Badge className="bg-green-100 text-green-700">Active Cycle</Badge>}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem 1.25rem", borderRadius: "1rem", background: "linear-gradient(135deg, rgba(48,176,208,0.15), rgba(92,200,224,0.05))", border: "1px solid rgba(48,176,208,0.2)", flexShrink: 0 }}>
+            <Shield className="w-8 h-8 text-[#30b0d0]" />
+            {cycle && (
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.25rem 0.75rem", borderRadius: "9999px", background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
+                Active Cycle
+              </span>
+            )}
+          </div>
         </div>
+
         {/* Quick Actions */}
-        <div className="grid grid-cols-4 gap-4">
-          <Button 
-            variant="outline" 
-            className="h-20 flex flex-col gap-2 bg-white hover:bg-slate-50 border-slate-200"
-            onClick={() => window.location.href = '/admin/shared-goals'}
-          >
-            <Target className="w-5 h-5 text-primary" />
-            <span className="text-xs font-semibold">Push Shared Goals</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="h-20 flex flex-col gap-2 bg-white hover:bg-slate-50 border-slate-200"
-            onClick={() => window.location.href = '/admin/sheets'}
-          >
-            <FileText className="w-5 h-5 text-primary" />
-            <span className="text-xs font-semibold">Manage Sheets</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="h-20 flex flex-col gap-2 bg-white hover:bg-slate-50 border-slate-200"
-            onClick={() => window.location.href = '/admin/cycles'}
-          >
-            <History className="w-5 h-5 text-primary" />
-            <span className="text-xs font-semibold">Manage Cycles</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="h-20 flex flex-col gap-2 bg-white hover:bg-slate-50 border-slate-200"
-            onClick={() => window.location.href = '/admin/escalations'}
-          >
-            <AlertTriangle className="w-5 h-5 text-primary" />
-            <span className="text-xs font-semibold">View Escalations</span>
-          </Button>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(11rem, 1fr))", gap: "1rem" }}>
+          {quickActions.map((a) => (
+            <button
+              key={a.href}
+              onClick={() => (window.location.href = a.href)}
+              className="glass iso-card"
+              style={{ padding: "1.25rem", borderRadius: "1rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", border: "none", cursor: "pointer", transition: "all 0.3s ease" }}
+            >
+              <div style={{ width: "3rem", height: "3rem", borderRadius: "0.875rem", background: `${a.color}18`, border: `1px solid ${a.color}30`, display: "flex", alignItems: "center", justifyContent: "center", color: a.color }}>
+                {a.icon}
+              </div>
+              <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "rgba(237,232,228,0.8)" }}>{a.label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-blue-600" />
+        {/* Stat Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: "1.25rem" }}>
+          {statCards.map((c) => (
+            <div key={c.label} className="glass iso-card" style={{ padding: "1.5rem", borderRadius: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+                <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "0.75rem", background: `${c.color}20`, display: "flex", alignItems: "center", justifyContent: "center", color: c.color }}>
+                  {c.icon}
                 </div>
-                <span className="text-sm font-medium text-slate-600">Total Employees</span>
+                <span style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)", fontWeight: 500 }}>{c.label}</span>
               </div>
-              <p className="text-3xl font-bold text-slate-900">{overview?.totalEmployees ?? 0}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-amber-600" />
-                </div>
-                <span className="text-sm font-medium text-slate-600">Submitted</span>
-              </div>
-              <p className="text-3xl font-bold text-slate-900">{overview?.sheetsSubmitted ?? 0}</p>
-              <Progress
-                value={overview?.submissionRate ?? 0}
-                className="h-1.5 mt-2"
-              />
-              <p className="text-xs text-slate-500 mt-1">{overview?.submissionRate ?? 0}% submission rate</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-                <span className="text-sm font-medium text-slate-600">Approved</span>
-              </div>
-              <p className="text-3xl font-bold text-slate-900">{overview?.sheetsApproved ?? 0}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-purple-600" />
-                </div>
-                <span className="text-sm font-medium text-slate-600">Locked</span>
-              </div>
-              <p className="text-3xl font-bold text-slate-900">{overview?.sheetsLocked ?? 0}</p>
-            </CardContent>
-          </Card>
+              <p style={{ fontSize: "2.25rem", fontWeight: 800, color: "#ffffff", lineHeight: 1 }}>{c.value}</p>
+              {c.sub && (
+                <>
+                  <div style={{ height: "0.25rem", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden", marginTop: "0.75rem" }}>
+                    <div style={{ width: `${overview?.submissionRate ?? 0}%`, height: "100%", background: "linear-gradient(90deg, #30b0d0, #5cc8e0)", borderRadius: "9999px" }} />
+                  </div>
+                  <p style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.35)", marginTop: "0.375rem" }}>{c.sub}</p>
+                </>
+              )}
+            </div>
+          ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          {/* Check-in Progress */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Check-in Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm text-slate-600">Completion Rate</span>
-                  <span className="text-sm font-bold">{checkIns?.completionRate ?? 0}%</span>
-                </div>
-                <Progress value={checkIns?.completionRate ?? 0} className="h-2" />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+          {/* Check-in Activity */}
+          <div className="glass" style={{ borderRadius: "1rem", padding: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
+              <TrendingUp className="w-4 h-4 text-[#30b0d0]" />
+              <h2 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#ede8e4" }}>Check-in Activity</h2>
+            </div>
+            <div style={{ marginBottom: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.375rem" }}>
+                <span style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)" }}>Completion Rate</span>
+                <span style={{ fontWeight: 700, color: "#30b0d0" }}>{checkIns?.completionRate ?? 0}%</span>
               </div>
-              <div className="space-y-3">
-                {(checkIns?.byQuarter || []).map((q: any) => (
-                  <div key={q.quarter} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                        {q.quarter}
-                      </div>
-                      <span className="text-sm text-slate-700">Check-ins</span>
+              <div style={{ height: "0.375rem", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden" }}>
+                <div style={{ width: `${checkIns?.completionRate ?? 0}%`, height: "100%", background: "linear-gradient(90deg, #30b0d0, #5cc8e0)", borderRadius: "9999px" }} />
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              {(checkIns?.byQuarter ?? []).map((q: any) => (
+                <div key={q.quarter} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", borderRadius: "0.625rem", background: "rgba(255,255,255,0.03)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+                    <div style={{ width: "2rem", height: "2rem", borderRadius: "0.5rem", background: "rgba(48,176,208,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.6875rem", fontWeight: 800, color: "#30b0d0" }}>
+                      {q.quarter}
                     </div>
-                    <span className="text-sm font-medium">{q.count}</span>
+                    <span style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.6)" }}>Check-ins</span>
                   </div>
-                ))}
-                {(!checkIns?.byQuarter || checkIns.byQuarter.length === 0) && (
-                  <p className="text-sm text-slate-400 text-center py-4">No check-ins yet</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <span style={{ fontWeight: 700, color: "#ede8e4" }}>{q.count}</span>
+                </div>
+              ))}
+              {(!checkIns?.byQuarter || checkIns.byQuarter.length === 0) && (
+                <p style={{ textAlign: "center", padding: "1rem 0", fontSize: "0.875rem", color: "rgba(237,232,228,0.3)" }}>No check-ins yet</p>
+              )}
+            </div>
+          </div>
 
-          {/* Goal Status Distribution */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Goal Status Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {(goals?.byStatus || []).map((g: any) => (
-                  <div key={g.status} className="flex items-center justify-between">
-                    <Badge className={statusColors[g.status] || "bg-slate-100 text-slate-600"}>
-                      {g.status.replace(/_/g, " ")}
-                    </Badge>
-                    <span className="text-sm font-medium">{g.count} goals</span>
-                  </div>
-                ))}
-                {(!goals?.byStatus || goals.byStatus.length === 0) && (
-                  <p className="text-sm text-slate-400 text-center py-4">No goals yet</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Top Thrust Areas */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Top Thrust Areas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {(thrustAreas || []).map((t: any, i: number) => {
-                const max = thrustAreas?.[0]?.goalCount || 1;
+          {/* Goal Status */}
+          <div className="glass" style={{ borderRadius: "1rem", padding: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
+              <BarChart3 className="w-4 h-4 text-[#30b0d0]" />
+              <h2 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#ede8e4" }}>Goal Status Distribution</h2>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              {(goals?.byStatus ?? []).map((g: any) => {
+                const c = statusColorMap[g.status] ?? statusColorMap.not_started;
                 return (
-                  <div key={t.name} className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-slate-400 w-4">{i + 1}</span>
-                    <span className="text-sm font-medium text-slate-700 w-48 truncate">{t.name}</span>
-                    <div className="flex-1">
-                      <Progress value={(t.goalCount / max) * 100} className="h-2" />
-                    </div>
-                    <span className="text-sm text-slate-500 w-16 text-right">{t.goalCount} goals</span>
+                  <div key={g.status} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", borderRadius: "0.625rem", background: "rgba(255,255,255,0.03)" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.25rem 0.625rem", borderRadius: "9999px", background: c.bg, color: c.text, textTransform: "capitalize" }}>
+                      {g.status.replace(/_/g, " ")}
+                    </span>
+                    <span style={{ fontWeight: 700, color: "#ede8e4" }}>{g.count} goals</span>
                   </div>
                 );
               })}
-              {(!thrustAreas || thrustAreas.length === 0) && (
-                <p className="text-sm text-slate-400 text-center py-4">No thrust areas with goals</p>
+              {(!goals?.byStatus || goals.byStatus.length === 0) && (
+                <p style={{ textAlign: "center", padding: "1rem 0", fontSize: "0.875rem", color: "rgba(237,232,228,0.3)" }}>No goals yet</p>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        {/* Thrust Areas */}
+        <div className="glass" style={{ borderRadius: "1rem", padding: "1.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
+            <Target className="w-4 h-4 text-[#30b0d0]" />
+            <h2 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#ede8e4" }}>Top Thrust Areas</h2>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {(thrustAreas ?? []).map((t: any, i: number) => {
+              const max = thrustAreas?.[0]?.goalCount || 1;
+              const pct = Math.round((t.goalCount / max) * 100);
+              return (
+                <div key={t.name} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "rgba(237,232,228,0.3)", width: "1.25rem" }}>{i + 1}</span>
+                  <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#ede8e4", width: "12rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.name}</span>
+                  <div style={{ flex: 1, height: "0.375rem", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden" }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: "linear-gradient(90deg, #30b0d0, #5cc8e0)", borderRadius: "9999px" }} />
+                  </div>
+                  <span style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.45)", width: "5rem", textAlign: "right" }}>{t.goalCount} goals</span>
+                </div>
+              );
+            })}
+            {(!thrustAreas || thrustAreas.length === 0) && (
+              <p style={{ textAlign: "center", padding: "1rem 0", fontSize: "0.875rem", color: "rgba(237,232,228,0.3)" }}>No thrust area data</p>
+            )}
+          </div>
+        </div>
       </div>
     </AppLayout>
   );
