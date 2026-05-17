@@ -172,14 +172,14 @@ export function GoalForm({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen: boolean) => !isOpen && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-skin-900 border-skin-700 text-skin-100 shadow-2xl shadow-black/50">
         <DialogHeader>
-          <DialogTitle>{editingGoal ? "Edit Goal" : "Add New Goal"}</DialogTitle>
+          <DialogTitle className="text-skin-50 font-bold text-xl">{editingGoal ? "Edit Goal" : "Add New Goal"}</DialogTitle>
         </DialogHeader>
 
         {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant="destructive" className="bg-red-950/50 border-red-800 text-red-200">
+            <AlertCircle className="h-4 w-4 text-red-400" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -187,24 +187,26 @@ export function GoalForm({
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">
-              Goal Title <span className="text-red-500">*</span>
+            <Label htmlFor="title" className="text-skin-200 font-medium">
+              Goal Title <span className="text-accent-light">*</span>
             </Label>
             <Input
               id="title"
+              className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:border-accent-default focus:ring-accent-default"
               placeholder="e.g., Increase Q3 Sales Revenue"
               {...register("title")}
             />
             {errors.title && (
-              <p className="text-sm text-red-500">{errors.title.message}</p>
+              <p className="text-sm text-red-400">{errors.title.message}</p>
             )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-skin-200 font-medium">Description</Label>
             <Textarea
               id="description"
+              className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:border-accent-default focus:ring-accent-default"
               placeholder="Describe the goal and expected outcomes..."
               rows={3}
               {...register("description")}
@@ -214,50 +216,50 @@ export function GoalForm({
           {/* Thrust Area & UoM Type */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>
-                Thrust Area <span className="text-red-500">*</span>
+              <Label className="text-skin-200 font-medium">
+                Thrust Area <span className="text-accent-light">*</span>
               </Label>
               <Select
                 value={watch("thrustAreaId")}
                 onValueChange={(v: string | null) => setValue("thrustAreaId", v || "")}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100">
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-skin-900 border-skin-700 text-skin-100">
                   {thrustAreas.map((ta) => (
-                    <SelectItem key={ta.id} value={ta.id}>
+                    <SelectItem key={ta.id} value={ta.id} className="focus:bg-skin-800 focus:text-skin-50">
                       {ta.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {errors.thrustAreaId && (
-                <p className="text-sm text-red-500">{errors.thrustAreaId.message}</p>
+                <p className="text-sm text-red-400">{errors.thrustAreaId.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label>
-                UoM Type <span className="text-red-500">*</span>
+              <Label className="text-skin-200 font-medium">
+                UoM Type <span className="text-accent-light">*</span>
               </Label>
               <Select
                 value={watch("uomTypeId")}
                 onValueChange={(v: string | null) => setValue("uomTypeId", v || "")}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100">
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-skin-900 border-skin-700 text-skin-100">
                   {uomTypes.map((uom) => (
-                    <SelectItem key={uom.id} value={uom.id}>
+                    <SelectItem key={uom.id} value={uom.id} className="focus:bg-skin-800 focus:text-skin-50">
                       {uom.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {errors.uomTypeId && (
-                <p className="text-sm text-red-500">{errors.uomTypeId.message}</p>
+                <p className="text-sm text-red-400">{errors.uomTypeId.message}</p>
               )}
             </div>
           </div>
@@ -267,19 +269,20 @@ export function GoalForm({
             <div className="space-y-2">
               {isTimeline ? (
                 <>
-                  <Label>
-                    Target Date <span className="text-red-500">*</span>
+                  <Label className="text-skin-200 font-medium">
+                    Target Date <span className="text-accent-light">*</span>
                   </Label>
-                  <Input type="date" {...register("targetDate")} />
+                  <Input type="date" className="bg-skin-950 border-skin-700 text-skin-100 focus:border-accent-default focus:ring-accent-default" {...register("targetDate")} />
                 </>
               ) : (
                 <>
-                  <Label>
-                    Target Value <span className="text-red-500">*</span>
+                  <Label className="text-skin-200 font-medium">
+                    Target Value <span className="text-accent-light">*</span>
                   </Label>
                   <Input
                     type="number"
                     step="any"
+                    className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:border-accent-default focus:ring-accent-default"
                     placeholder={
                       selectedUom.code.includes("percentage")
                         ? "e.g., 85"
@@ -287,7 +290,7 @@ export function GoalForm({
                     }
                     {...register("targetValue")}
                   />
-                  <p className="text-xs text-slate-500">{selectedUom.description}</p>
+                  <p className="text-xs text-skin-400">{selectedUom.description}</p>
                 </>
               )}
             </div>
@@ -295,8 +298,8 @@ export function GoalForm({
 
           {/* Weightage */}
           <div className="space-y-2">
-            <Label>
-              Weightage (%) <span className="text-red-500">*</span>
+            <Label className="text-skin-200 font-medium">
+              Weightage (%) <span className="text-accent-light">*</span>
             </Label>
             <div className="flex items-center gap-3">
               <Input
@@ -304,24 +307,25 @@ export function GoalForm({
                 min={10}
                 max={100}
                 step="0.1"
+                className="bg-skin-950 border-skin-700 text-skin-100 focus:border-accent-default focus:ring-accent-default"
                 {...register("weightage", { valueAsNumber: true })}
               />
-              <span className="text-sm text-slate-500 whitespace-nowrap">
+              <span className="text-sm text-skin-300 whitespace-nowrap font-medium">
                 Remaining: {remainingWeightage.toFixed(1)}%
               </span>
             </div>
             {errors.weightage && (
-              <p className="text-sm text-red-500">{errors.weightage.message}</p>
+              <p className="text-sm text-red-400">{errors.weightage.message}</p>
             )}
-            <p className="text-xs text-slate-500">Minimum 10% per goal</p>
+            <p className="text-xs text-skin-400">Minimum 10% per goal</p>
           </div>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} className="border-skin-700 text-skin-200 hover:bg-skin-800 hover:text-skin-100">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="bg-accent-default hover:bg-accent-dark text-white font-semibold shadow-lg shadow-accent-default/20">
               {isSubmitting ? "Saving..." : editingGoal ? "Update Goal" : "Add Goal"}
             </Button>
           </div>
