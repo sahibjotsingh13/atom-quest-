@@ -103,26 +103,26 @@ export function CheckInForm({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg bg-skin-900 border-skin-700 text-skin-100 shadow-2xl shadow-black/50">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
+          <DialogTitle className="flex items-center gap-2 text-skin-50 font-serif-display font-bold text-xl">
+            <Target className="w-5 h-5 text-accent-light" />
             {quarter} Check-in: {goal.title}
           </DialogTitle>
         </DialogHeader>
 
         {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant="destructive" className="bg-red-950/50 border-red-800 text-red-200 font-sans-body">
+            <AlertCircle className="h-4 w-4 text-red-400" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {/* Goal Info */}
-        <div className="bg-slate-50 p-3 rounded-lg text-sm space-y-1">
-          <div className="flex justify-between">
-            <span className="text-slate-600">Target:</span>
-            <span className="font-medium">
+        <div className="glass p-4 rounded-xl bg-skin-800/40 border border-skin-700 space-y-1.5 font-sans-body">
+          <div className="flex justify-between text-sm">
+            <span className="text-skin-400 font-medium">Target:</span>
+            <span className="font-bold text-skin-50">
               {isTimeline
                 ? (goal.targetDate ? new Date(goal.targetDate).toLocaleDateString() : "No Date")
                 : isPercentage
@@ -130,44 +130,46 @@ export function CheckInForm({
                 : goal.targetValue}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-slate-600">UoM:</span>
-            <span className="font-medium">{goal.uomType?.name}</span>
+          <div className="flex justify-between text-sm">
+            <span className="text-skin-400 font-medium">UoM:</span>
+            <span className="font-bold text-skin-50">{goal.uomType?.name}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-slate-600">Weightage:</span>
-            <span className="font-medium">{goal.weightage}%</span>
+          <div className="flex justify-between text-sm">
+            <span className="text-skin-400 font-medium">Weightage:</span>
+            <span className="font-bold text-accent-light">{goal.weightage}%</span>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 font-sans-body">
           {/* Actual Input - Dynamic based on UoM */}
           {isTimeline ? (
             <div className="space-y-2">
-              <Label>
-                Completion Date <span className="text-red-500">*</span>
+              <Label className="text-skin-200 font-medium">
+                Completion Date <span className="text-accent-light">*</span>
               </Label>
               <Input
                 type="date"
+                className="bg-skin-950 border-skin-700 text-skin-100 focus:border-accent-default focus:ring-accent-default"
                 value={actualDate}
                 onChange={(e) => {
                   setActualDate(e.target.value);
                   setPreviewScore(null);
                 }}
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-skin-400">
                 Target date: {goal.targetDate ? new Date(goal.targetDate).toLocaleDateString() : "No Date"}
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              <Label>
-                Actual Achievement <span className="text-red-500">*</span>
+              <Label className="text-skin-200 font-medium">
+                Actual Achievement <span className="text-accent-light">*</span>
               </Label>
               <div className="flex items-center gap-3">
                 <Input
                   type="number"
                   step="any"
+                  className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:border-accent-default focus:ring-accent-default"
                   value={actualValue}
                   onChange={(e) => {
                     setActualValue(e.target.value);
@@ -175,10 +177,10 @@ export function CheckInForm({
                   }}
                   placeholder={isZeroBased ? "0 = Success, >0 = Failure" : "Enter actual value"}
                 />
-                {isPercentage && <span className="text-slate-500">%</span>}
+                {isPercentage && <span className="text-skin-400 font-semibold">%</span>}
               </div>
               {isZeroBased && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-skin-400">
                   Zero-based: Enter 0 for success, any positive number for failure
                 </p>
               )}
@@ -187,26 +189,27 @@ export function CheckInForm({
 
           {/* Status */}
           <div className="space-y-2">
-            <Label>
-              Status <span className="text-red-500">*</span>
+            <Label className="text-skin-200 font-medium">
+              Status <span className="text-accent-light">*</span>
             </Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100">
                 <SelectValue placeholder="Select status..." />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="not_started">Not Started</SelectItem>
-                <SelectItem value="on_track">On Track</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="at_risk">At Risk</SelectItem>
+              <SelectContent className="bg-skin-900 border-skin-700 text-skin-100">
+                <SelectItem value="not_started" className="focus:bg-skin-800 focus:text-skin-50">Not Started</SelectItem>
+                <SelectItem value="on_track" className="focus:bg-skin-800 focus:text-skin-50">On Track</SelectItem>
+                <SelectItem value="completed" className="focus:bg-skin-800 focus:text-skin-50">Completed</SelectItem>
+                <SelectItem value="at_risk" className="focus:bg-skin-800 focus:text-skin-50">At Risk</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Comment */}
           <div className="space-y-2">
-            <Label>Comment</Label>
+            <Label className="text-skin-200 font-medium">Comment</Label>
             <Textarea
+              className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:border-accent-default focus:ring-accent-default"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Describe your progress, challenges, or achievements..."
@@ -215,20 +218,21 @@ export function CheckInForm({
           </div>
 
           {/* Preview Score */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pt-1">
             <Button
               type="button"
               variant="outline"
               size="sm"
+              className="border-skin-700 text-skin-200 hover:bg-skin-800 hover:text-skin-100"
               onClick={calculatePreview}
             >
-              <Calculator className="w-4 h-4 mr-1" />
+              <Calculator className="w-4 h-4 mr-1.5 text-accent-light" />
               Preview Score
             </Button>
             {previewScore !== null && (
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-green-600">
+              <div className="flex items-center gap-2 glass px-3 py-1.5 rounded-lg bg-skin-800/50 border border-skin-700">
+                <TrendingUp className="w-4 h-4 text-[#5cc8e0]" />
+                <span className="text-sm font-bold text-[#5cc8e0]">
                   {previewScore.toFixed(1)}%
                 </span>
               </div>
@@ -236,11 +240,13 @@ export function CheckInForm({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-skin-800">
+            <Button type="button" variant="outline" onClick={onClose} className="border-skin-700 text-skin-200 hover:bg-skin-800 hover:text-skin-100">
               Cancel
             </Button>
-            <Button type="submit">Save Check-in</Button>
+            <Button type="submit" className="bg-accent-default hover:bg-accent-dark text-white font-semibold shadow-lg shadow-accent-default/20">
+              Save Check-in
+            </Button>
           </div>
         </form>
       </DialogContent>
