@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 import { ManagerDashboard } from "@/components/dashboard/ManagerDashboard";
-import { EmployeeDashboard } from "@/components/dashboard/EmployeeDashboard";
+import { EmployeeOverview } from "@/components/dashboard/EmployeeOverview";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -20,6 +20,6 @@ export default async function Home() {
     return <ManagerDashboard />;
   } else {
     // Default to Employee view
-    return <EmployeeDashboard />;
+    return <EmployeeOverview />;
   }
 }

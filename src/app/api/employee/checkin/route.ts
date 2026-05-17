@@ -9,8 +9,8 @@ import { isCheckInWindowOpen } from "@/lib/checkin-window";
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role !== "employee") {
-    return new Response("Unauthorized", { status: 403 });
+  if (!session) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
