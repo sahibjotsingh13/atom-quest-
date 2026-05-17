@@ -118,7 +118,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const navItems: NavItem[] = [
     { label: "Dashboard", href: "/", icon: <LayoutDashboard className="w-5 h-5" />, roles: ["employee", "manager", "admin"] },
-    { label: "My Goals", href: "/goals", icon: <Target className="w-5 h-5" />, roles: ["employee"] },
     { label: "Check-ins", href: "/employee/checkins", icon: <CheckCircle className="w-5 h-5" />, roles: ["employee"] },
     { label: "Team", href: "/team", icon: <Users className="w-5 h-5" />, roles: ["manager"] },
     { label: "Approvals", href: "/approvals", icon: <CheckCircle className="w-5 h-5" />, roles: ["manager"] },
