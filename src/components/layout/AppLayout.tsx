@@ -5,13 +5,11 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { 
-  Target, 
-  LayoutDashboard, 
-  Users, 
-  CheckCircle, 
-  Bell, 
-  Settings, 
+import {
+  Target,
+  LayoutDashboard,
+  Users,
+  CheckCircle,
   LogOut,
   Shield,
   BarChart3,
@@ -24,11 +22,8 @@ import {
   Search,
   Menu,
   ChevronRight,
-  Atom
+  Atom,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { NotificationCenter } from "./NotificationCenter";
 
 interface NavItem {
@@ -45,7 +40,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Initialize theme
+    // Initialize theme - default to dark for flow shader
     const savedTheme = localStorage.getItem("theme") || "dark";
     setTheme(savedTheme);
     if (savedTheme === "dark") {
@@ -56,10 +51,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       document.getElementById("themeToggle")?.classList.remove("active");
     }
 
-    // Generate floating particles
+    // Generate floating particles - cyan/teal for flow shader
     const container = document.getElementById("particles");
     if (container && container.children.length === 0) {
-      const colors = ['#ffab91', '#ff7043', '#a07e6f', '#8d6e63', '#d2bab0'];
+      const colors = ['#30b0d0', '#1a8ca8', '#5cc8e0', '#4a8fa8', '#2d5a73', '#6bb3cc'];
       for (let i = 0; i < 20; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
@@ -80,7 +75,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       const cards = document.querySelectorAll('.iso-card, .goal-stack-item');
       const x = (window.innerWidth / 2 - e.pageX) / 50;
       const y = (window.innerHeight / 2 - e.pageY) / 50;
-      
+
       cards.forEach((card: any, index) => {
         const factor = (index % 3 + 1) * 0.5;
         card.style.transform = `perspective(1000px) rotateY(${x * factor}deg) rotateX(${y * factor}deg) translateZ(10px)`;
@@ -94,7 +89,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     const html = document.documentElement;
     const toggle = document.getElementById('themeToggle');
-    
+
     if (html.classList.contains('dark')) {
       html.classList.remove('dark');
       toggle?.classList.remove('active');
@@ -110,8 +105,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center h-screen bg-skin-950">
-        <Loader2 className="w-12 h-12 animate-spin text-accent" />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#050a0f" }}>
+        <Loader2 className="w-12 h-12 animate-spin text-[#30b0d0]" />
       </div>
     );
   }
@@ -133,39 +128,64 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { label: "Shared Goals", href: "/admin/shared-goals", icon: <Target className="w-5 h-5" />, roles: ["admin"] },
     { label: "Cycles", href: "/admin/cycles", icon: <CalendarDays className="w-5 h-5" />, roles: ["admin"] },
     { label: "Escalations", href: "/admin/escalations", icon: <AlertTriangle className="w-5 h-5" />, roles: ["admin"] },
-    { label: "Settings", href: "/settings", icon: <Settings className="w-5 h-5" />, roles: ["employee", "manager", "admin"] },
   ];
 
   const filteredNav = navItems.filter((item) => item.roles.includes(role || ""));
 
   return (
-    <div className="flex h-screen overflow-hidden relative z-10 bg-skin-50 dark:bg-skin-950 text-skin-900 dark:text-skin-100 transition-colors duration-500">
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", position: "relative", zIndex: 10, background: "#050a0f", color: "#ede8e4" }}>
       {/* Floating Background Particles */}
-      <div id="particles" className="fixed inset-0 pointer-events-none overflow-hidden z-0"></div>
+      <div id="particles" style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}></div>
 
       {/* 3D Sidebar */}
-      <aside 
-        className={`sidebar-3d fixed lg:static inset-y-0 left-0 w-72 h-full glass flex flex-col border-r border-skin-200 dark:border-skin-800 z-50 transition-all duration-300 transform ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+      <aside
+        className="sidebar-3d"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: "18rem",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          zIndex: 50,
+          transition: "all 0.3s ease",
+          transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
+        }}
       >
         {/* Logo Area */}
-        <div className="p-6 border-b border-skin-200 dark:border-skin-800">
-          <Link href="/" className="flex items-center gap-3 perspective-1000">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-light to-accent-dark flex items-center justify-center shadow-lg transform hover:rotate-12 transition-transform duration-300">
+        <div style={{ padding: "1.5rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none" }}>
+            <div
+              style={{
+                width: "3rem",
+                height: "3rem",
+                borderRadius: "0.75rem",
+                background: "linear-gradient(135deg, #5cc8e0, #1a8ca8)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 16px rgba(48,176,208,0.3)",
+              }}
+            >
               <Atom className="w-6 h-6 text-white animate-spin-slow" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-skin-800 to-accent-dark dark:from-skin-100 dark:to-accent-light bg-clip-text text-transparent">AtomQuest</h1>
-              <p className="text-xs text-skin-500 dark:text-skin-400">3D Goal Portal</p>
+              <h1 className="font-serif-display" style={{ fontSize: "1.125rem", fontWeight: 700, background: "linear-gradient(135deg, #5cc8e0, #1a8ca8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                AtomQuest
+              </h1>
+              <p className="font-sans-body" style={{ fontSize: "0.6875rem", color: "rgba(237,232,228,0.4)" }}>Goal Portal</p>
             </div>
           </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <div className="text-xs font-semibold text-skin-400 dark:text-skin-500 uppercase tracking-wider mb-3 px-3">Navigation</div>
-          
+        <nav style={{ flex: 1, padding: "1rem", display: "flex", flexDirection: "column", gap: "0.25rem", overflowY: "auto" }}>
+          <div className="font-sans-body" style={{ fontSize: "0.6875rem", fontWeight: 700, color: "rgba(237,232,228,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem", paddingLeft: "0.75rem" }}>
+            Navigation
+          </div>
+
           {filteredNav.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -173,16 +193,39 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium shadow-sm transform hover:translate-x-2 transition-all duration-300 ${
-                  isActive
-                    ? "bg-gradient-to-r from-accent-light/20 to-transparent text-accent-dark dark:text-accent-light border-l-4 border-accent"
-                    : "hover:bg-skin-100 dark:hover:bg-skin-900 text-skin-600 dark:text-skin-300"
-                }`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                  padding: "0.75rem 1rem",
+                  borderRadius: "0.75rem",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  transition: "all 0.3s ease",
+                  textDecoration: "none",
+                  background: isActive ? "linear-gradient(90deg, rgba(48,176,208,0.12), transparent)" : "transparent",
+                  color: isActive ? "#5cc8e0" : "rgba(237,232,228,0.6)",
+                  borderLeft: isActive ? "3px solid #30b0d0" : "3px solid transparent",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                    e.currentTarget.style.color = "#ede8e4";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "rgba(237,232,228,0.6)";
+                  }
+                }}
               >
-                {item.icon}
+                <span style={{ color: isActive ? "#30b0d0" : "inherit", transition: "color 0.3s ease" }}>{item.icon}</span>
                 <span>{item.label}</span>
                 {item.label === "Approvals" && (
-                  <span className="ml-auto bg-accent text-white text-xs px-2 py-0.5 rounded-full badge-bounce">3</span>
+                  <span style={{ marginLeft: "auto", background: "#30b0d0", color: "#050a0f", fontSize: "0.625rem", padding: "0.125rem 0.5rem", borderRadius: "9999px", fontWeight: 800 }}>
+                    3
+                  </span>
                 )}
               </Link>
             );
@@ -190,67 +233,130 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-skin-200 dark:border-skin-800">
-          <div className="glass rounded-2xl p-4 flex items-center gap-3 mb-3 hover:shadow-lg transition-shadow">
-            <Avatar className="w-10 h-10 border-2 border-accent/20 shadow-md">
-              <AvatarFallback className="bg-gradient-to-br from-skin-400 to-skin-600 text-white font-bold">
-                {session.user?.firstName?.[0]}
-                {session.user?.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{session.user?.firstName} {session.user?.lastName}</p>
-              <p className="text-xs text-skin-500 dark:text-skin-400 capitalize">{role}</p>
+        <div style={{ padding: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="glass" style={{ padding: "1rem", display: "flex", alignItems: "center", gap: "0.75rem", borderRadius: "1rem", marginBottom: "0.75rem", transition: "box-shadow 0.3s ease" }}>
+            <div
+              style={{
+                width: "2.5rem",
+                height: "2.5rem",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 700,
+                fontSize: "0.75rem",
+                color: "#ede8e4",
+                border: "2px solid rgba(48,176,208,0.15)",
+                flexShrink: 0,
+              }}
+            >
+              {session.user?.firstName?.[0]}{session.user?.lastName?.[0]}
             </div>
-            <ChevronRight className="w-4 h-4 text-skin-400" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {session.user?.firstName} {session.user?.lastName}
+              </p>
+              <p className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", textTransform: "capitalize" }}>
+                {role}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: "rgba(237,232,228,0.3)", flexShrink: 0 }} />
           </div>
-          <Button
-            variant="outline"
-            className="w-full btn-3d bg-skin-100 dark:bg-skin-900 border-skin-200 dark:border-skin-800 hover:bg-destructive hover:text-white transition-colors"
+          <button
+            className="login-btn font-sans-body"
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              fontSize: "0.8125rem",
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.15)",
+              color: "#f87171",
+            }}
             onClick={() => signOut({ callbackUrl: "/login" })}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(239,68,68,0.15)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(239,68,68,0.08)";
+            }}
           >
-            <LogOut className="w-4 h-4 mr-2" />
+            <LogOut className="w-4 h-4" />
             Sign Out
-          </Button>
+          </button>
         </div>
       </aside>
 
+      {/* Sidebar overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(5,10,15,0.6)",
+            backdropFilter: "blur(4px)",
+            zIndex: 40,
+          }}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-gradient-to-br from-skin-50 via-skin-100/50 to-skin-200/30 dark:from-skin-950 dark:via-skin-900/50 dark:to-skin-800/30">
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%", overflow: "hidden", marginLeft: "18rem" }}>
         {/* Top Navbar */}
-        <header className="glass border-b border-skin-200 dark:border-skin-800 px-8 py-4 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)} 
-              className="lg:hidden p-2 rounded-lg hover:bg-skin-100 dark:hover:bg-skin-800 transition-colors"
+        <header className="glass" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "1rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 40 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{
+                display: "none",
+                padding: "0.5rem",
+                borderRadius: "0.5rem",
+                background: "transparent",
+                border: "none",
+                color: "#ede8e4",
+                cursor: "pointer",
+              }}
+              className="sidebar-toggle-btn"
             >
-              <Menu className="w-6 h-6 text-skin-800 dark:text-skin-100" />
+              <Menu className="w-6 h-6" />
             </button>
-            <h2 className="text-2xl font-bold text-skin-800 dark:text-skin-100">
+            <h2 className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}>
               {filteredNav.find((n) => n.href === pathname)?.label || "Dashboard"}
             </h2>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             {/* Search */}
-            <div className="relative hidden md:block">
-              <input 
-                type="text" 
-                placeholder="Search goals..." 
-                className="input-3d w-64 pl-10 pr-4 py-2.5 rounded-xl bg-skin-100 dark:bg-skin-900 border border-skin-200 dark:border-skin-700 focus:outline-none focus:border-accent dark:focus:border-accent-light text-sm"
+            <div style={{ position: "relative", display: "none" }} className="search-box">
+              <input
+                type="text"
+                placeholder="Search goals..."
+                className="login-input font-sans-body"
+                style={{
+                  width: "16rem",
+                  paddingLeft: "2.5rem",
+                  paddingRight: "1rem",
+                  paddingTop: "0.625rem",
+                  paddingBottom: "0.625rem",
+                  fontSize: "0.8125rem",
+                }}
               />
-              <Search className="absolute left-3.5 top-3 w-4 h-4 text-skin-400" />
+              <Search className="w-4 h-4" style={{ position: "absolute", left: "0.875rem", top: "50%", transform: "translateY(-50%)", color: "rgba(237,232,228,0.3)" }} />
             </div>
 
             {/* Theme Toggle */}
-            <div className="flex items-center gap-2">
-              <Sun className="w-4 h-4 text-skin-400" />
-              <div 
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <Sun className="w-4 h-4" style={{ color: "rgba(237,232,228,0.3)" }} />
+              <div
                 id="themeToggle"
-                className={`switch-3d ${theme === "dark" ? "active" : ""}`} 
+                className={`switch-3d ${theme === "dark" ? "active" : ""}`}
                 onClick={toggleTheme}
               ></div>
-              <Moon className="w-4 h-4 text-skin-400" />
+              <Moon className="w-4 h-4" style={{ color: "rgba(237,232,228,0.3)" }} />
             </div>
 
             {/* Notifications */}
@@ -259,10 +365,38 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Scrollable Page Content */}
-        <div className="flex-1 overflow-y-auto p-8 relative z-10 space-y-8">
+        <div style={{ flex: 1, overflowY: "auto", padding: "2rem", position: "relative", zIndex: 1 }}>
           {children}
         </div>
       </main>
+
+      <style jsx>{`
+        @media (max-width: 1024px) {
+          .sidebar-3d {
+            transform: translateX(-100%) !important;
+          }
+          .sidebar-3d.open {
+            transform: translateX(0) !important;
+          }
+          main {
+            margin-left: 0 !important;
+          }
+          .sidebar-toggle-btn {
+            display: block !important;
+          }
+        }
+        @media (min-width: 1025px) {
+          .sidebar-3d {
+            transform: translateX(0) !important;
+            position: static !important;
+          }
+        }
+        @media (min-width: 768px) {
+          .search-box {
+            display: block !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
