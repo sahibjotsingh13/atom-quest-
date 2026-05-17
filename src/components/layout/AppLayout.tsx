@@ -23,6 +23,7 @@ import {
   Menu,
   ChevronRight,
   Atom,
+  Settings,
 } from "lucide-react";
 import { NotificationCenter } from "./NotificationCenter";
 
@@ -119,6 +120,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { label: "Dashboard", href: "/", icon: <LayoutDashboard className="w-5 h-5" />, roles: ["employee", "manager", "admin"] },
     { label: "My Goals", href: "/goals", icon: <Target className="w-5 h-5" />, roles: ["employee"] },
     { label: "Check-ins", href: "/employee/checkins", icon: <CheckCircle className="w-5 h-5" />, roles: ["employee"] },
+    { label: "Analytics", href: "/employee/analytics", icon: <BarChart3 className="w-5 h-5" />, roles: ["employee"] },
     { label: "Team", href: "/team", icon: <Users className="w-5 h-5" />, roles: ["manager"] },
     { label: "Approvals", href: "/approvals", icon: <CheckCircle className="w-5 h-5" />, roles: ["manager"] },
     { label: "Team Check-ins", href: "/manager/checkins", icon: <CheckCircle className="w-5 h-5" />, roles: ["manager"] },
@@ -128,6 +130,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { label: "Shared Goals", href: "/admin/shared-goals", icon: <Target className="w-5 h-5" />, roles: ["admin"] },
     { label: "Cycles", href: "/admin/cycles", icon: <CalendarDays className="w-5 h-5" />, roles: ["admin"] },
     { label: "Escalations", href: "/admin/escalations", icon: <AlertTriangle className="w-5 h-5" />, roles: ["admin"] },
+    { label: "Settings", href: "/settings", icon: <Settings className="w-5 h-5" />, roles: ["employee", "manager", "admin"] },
   ];
 
   const filteredNav = navItems.filter((item) => item.roles.includes(role || ""));
@@ -139,7 +142,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* 3D Sidebar */}
       <aside
-        className="sidebar-3d"
+        className={`sidebar-3d ${sidebarOpen ? "open" : ""}`}
         style={{
           position: "fixed",
           top: 0,
@@ -151,7 +154,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           flexDirection: "column",
           zIndex: 50,
           transition: "all 0.3s ease",
-          transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
+          background: "rgba(5, 10, 15, 0.85)",
+          backdropFilter: "blur(16px)",
+          borderRight: "1px solid rgba(255, 255, 255, 0.06)",
+          boxShadow: "5px 0 25px rgba(0,0,0,0.5)",
         }}
       >
         {/* Logo Area */}
@@ -388,7 +394,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         @media (min-width: 1025px) {
           .sidebar-3d {
             transform: translateX(0) !important;
-            position: static !important;
+            position: fixed !important;
           }
         }
         @media (min-width: 768px) {
