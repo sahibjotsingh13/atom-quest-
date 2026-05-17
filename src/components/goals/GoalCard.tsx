@@ -1,10 +1,6 @@
 // src/components/goals/GoalCard.tsx
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Target, TrendingUp, Calendar, Edit2, Trash2, Lock, CheckCircle2, Circle } from "lucide-react";
 
 interface GoalCardProps {
@@ -19,12 +15,12 @@ interface GoalCardProps {
 export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn }: GoalCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "not_started": return "bg-skin-100 text-skin-700 dark:bg-skin-800 dark:text-skin-200 border-skin-300 dark:border-skin-700";
-      case "on_track": return "bg-accent/10 text-accent dark:text-accent-light border-accent/30";
-      case "completed": return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30";
-      case "at_risk": return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30";
-      case "delayed": return "bg-destructive/10 text-destructive dark:text-red-400 border-destructive/30";
-      default: return "bg-skin-100 text-skin-700 dark:bg-skin-800 dark:text-skin-200 border-skin-300 dark:border-skin-700";
+      case "not_started": return { bg: "rgba(255,255,255,0.04)", text: "rgba(237,232,228,0.6)", border: "rgba(255,255,255,0.08)" };
+      case "on_track": return { bg: "rgba(48,176,208,0.08)", text: "#5cc8e0", border: "rgba(48,176,208,0.15)" };
+      case "completed": return { bg: "rgba(34,197,94,0.08)", text: "#4ade80", border: "rgba(34,197,94,0.15)" };
+      case "at_risk": return { bg: "rgba(245,158,11,0.08)", text: "#fbbf24", border: "rgba(245,158,11,0.15)" };
+      case "delayed": return { bg: "rgba(239,68,68,0.08)", text: "#f87171", border: "rgba(239,68,68,0.15)" };
+      default: return { bg: "rgba(255,255,255,0.04)", text: "rgba(237,232,228,0.6)", border: "rgba(255,255,255,0.08)" };
     }
   };
 
@@ -38,95 +34,188 @@ export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn 
     return goal.targetValue?.toLocaleString();
   };
 
-  return (
-    <div 
-      className={`goal-stack-item glass rounded-2xl p-6 transition-all duration-500 hover:shadow-2xl hover:border-accent/40 relative overflow-hidden ${
-        goal.isShared 
-          ? "border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/10 shadow-[0_8px_32px_0_rgba(59,130,246,0.1)]" 
-          : "bg-white/60 dark:bg-skin-900/60 shadow-[0_8px_32px_0_rgba(160,126,111,0.05)]"
-      }`}
-    >
-      {/* Decorative Shimmer / Glow */}
-      <div className="absolute -right-20 -top-20 w-40 h-40 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+  const statusColors = getStatusColor(goal.status);
 
-      <div className="flex justify-between items-start gap-6 relative z-10">
-        <div className="flex-1 space-y-4">
+  return (
+    <div
+      className="goal-stack-item"
+      style={{
+        padding: "1.5rem",
+        borderRadius: "1rem",
+        background: goal.isShared ? "rgba(48,176,208,0.03)" : "rgba(255,255,255,0.03)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        border: goal.isShared ? "1px solid rgba(48,176,208,0.15)" : "1px solid rgba(255,255,255,0.06)",
+        boxShadow: goal.isShared ? "0 8px 32px rgba(48,176,208,0.06)" : "none",
+        position: "relative",
+        overflow: "hidden",
+        transition: "all 0.5s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "rgba(48,176,208,0.2)";
+        e.currentTarget.style.boxShadow = "0 20px 40px rgba(0,0,0,0.2)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = goal.isShared ? "rgba(48,176,208,0.15)" : "rgba(255,255,255,0.06)";
+        e.currentTarget.style.boxShadow = goal.isShared ? "0 8px 32px rgba(48,176,208,0.06)" : "none";
+      }}
+    >
+      {/* Decorative glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-5rem",
+          right: "-5rem",
+          width: "10rem",
+          height: "10rem",
+          background: "radial-gradient(circle, rgba(48,176,208,0.06) 0%, transparent 70%)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1.5rem", position: "relative", zIndex: 1 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "1rem" }}>
           {/* Header Row */}
-          <div className="flex items-center gap-3 depth-1">
-            <span className="w-8 h-8 rounded-xl bg-skin-200 dark:bg-skin-800 flex items-center justify-center text-sm font-bold text-skin-700 dark:text-skin-200 shadow-inner">
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+            <span
+              style={{
+                width: "2rem",
+                height: "2rem",
+                borderRadius: "0.75rem",
+                background: "rgba(255,255,255,0.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "0.8125rem",
+                fontWeight: 700,
+                color: "#ede8e4",
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)",
+              }}
+            >
               #{index + 1}
             </span>
             {goal.isShared && (
-              <Badge variant="outline" className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-3 py-1 rounded-lg shadow-sm">
-                <Lock className="w-3.5 h-3.5 mr-1.5" /> Shared Goal
-              </Badge>
+              <span
+                className="font-sans-body"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.375rem",
+                  padding: "0.25rem 0.75rem",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.6875rem",
+                  fontWeight: 600,
+                  background: "rgba(48,176,208,0.08)",
+                  color: "#5cc8e0",
+                  border: "1px solid rgba(48,176,208,0.15)",
+                }}
+              >
+                <Lock className="w-3.5 h-3.5" /> Shared Goal
+              </span>
             )}
-            <Badge className={`px-3 py-1 rounded-lg border text-xs font-semibold capitalize shadow-sm ${getStatusColor(goal.status)}`}>
-              {goal.status?.replace("_", " ") || "Not Started"}
-            </Badge>
+            <span
+              className="font-sans-body"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "0.25rem 0.75rem",
+                borderRadius: "0.5rem",
+                fontSize: "0.6875rem",
+                fontWeight: 600,
+                textTransform: "capitalize",
+                background: statusColors.bg,
+                color: statusColors.text,
+                border: `1px solid ${statusColors.border}`,
+              }}
+            >
+              {(goal.status || "not_started").replace("_", " ")}
+            </span>
           </div>
 
           {/* Title & Description */}
-          <div className="depth-2 space-y-1.5">
-            <h3 className="text-xl font-bold text-skin-900 dark:text-skin-50 tracking-tight">{goal.title}</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+            <h3 className="font-serif-display" style={{ fontSize: "1.125rem", fontWeight: 600, color: "#ffffff", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}>
+              {goal.title}
+            </h3>
             {goal.description && (
-              <p className="text-sm text-skin-600 dark:text-skin-300 line-clamp-2 leading-relaxed">{goal.description}</p>
+              <p className="font-sans-body" style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                {goal.description}
+              </p>
             )}
           </div>
 
           {/* Details Grid */}
-          <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm depth-1 pt-2 border-t border-skin-200/50 dark:border-skin-800/50">
-            <div className="flex items-center gap-2 glass px-3 py-1.5 rounded-xl bg-skin-100/50 dark:bg-skin-800/50">
-              <Target className="w-4 h-4 text-accent" />
-              <span className="text-skin-500 dark:text-skin-400 font-medium">Target:</span>
-              <span className="font-bold text-skin-900 dark:text-skin-100">{formatTarget()}</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.875rem", borderRadius: "0.75rem", background: "rgba(255,255,255,0.02)" }}>
+              <Target className="w-4 h-4 text-[#30b0d0]" />
+              <span className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", fontWeight: 500 }}>Target:</span>
+              <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#ede8e4" }}>{formatTarget()}</span>
             </div>
-            <div className="flex items-center gap-2 glass px-3 py-1.5 rounded-xl bg-skin-100/50 dark:bg-skin-800/50">
-              <TrendingUp className="w-4 h-4 text-accent" />
-              <span className="text-skin-500 dark:text-skin-400 font-medium">Weightage:</span>
-              <span className="font-bold text-accent dark:text-accent-light">{goal.weightage}%</span>
+            <div className="glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.875rem", borderRadius: "0.75rem", background: "rgba(255,255,255,0.02)" }}>
+              <TrendingUp className="w-4 h-4 text-[#30b0d0]" />
+              <span className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", fontWeight: 500 }}>Weightage:</span>
+              <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#5cc8e0" }}>{goal.weightage}%</span>
             </div>
             {goal.thrustArea && (
-              <div className="flex items-center gap-2 glass px-3 py-1.5 rounded-xl bg-skin-100/50 dark:bg-skin-800/50">
-                <Calendar className="w-4 h-4 text-accent" />
-                <span className="font-semibold text-skin-800 dark:text-skin-200">{goal.thrustArea.name}</span>
+              <div className="glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.875rem", borderRadius: "0.75rem", background: "rgba(255,255,255,0.02)" }}>
+                <Calendar className="w-4 h-4 text-[#30b0d0]" />
+                <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 600, color: "rgba(237,232,228,0.8)" }}>{goal.thrustArea.name}</span>
               </div>
             )}
           </div>
 
           {/* Progress Bar */}
           {goal.progressScore !== null && goal.progressScore !== undefined && (
-            <div className="space-y-2 pt-2 depth-2">
-              <div className="flex justify-between text-sm font-semibold">
-                <span className="text-skin-600 dark:text-skin-300">Overall Progress</span>
-                <span className="text-accent dark:text-accent-light">{Number(goal.progressScore).toFixed(1)}%</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", paddingTop: "0.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8125rem", fontWeight: 600 }}>
+                <span className="font-sans-body" style={{ color: "rgba(237,232,228,0.6)" }}>Overall Progress</span>
+                <span className="font-sans-body" style={{ color: "#5cc8e0" }}>{Number(goal.progressScore).toFixed(1)}%</span>
               </div>
-              <div className="relative h-3 w-full bg-skin-200 dark:bg-skin-800 rounded-full overflow-hidden p-0.5 shadow-inner">
-                <div 
-                  className="h-full bg-gradient-to-r from-accent-light via-accent to-accent-dark rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(255,112,67,0.5)]"
-                  style={{ width: `${Math.min(100, Math.max(0, Number(goal.progressScore)))}%` }}
-                ></div>
+              <div style={{ position: "relative", height: "0.75rem", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden", padding: "1px" }}>
+                <div
+                  style={{
+                    height: "100%",
+                    borderRadius: "9999px",
+                    transition: "all 1s ease",
+                    width: `${Math.min(100, Math.max(0, Number(goal.progressScore)))}%`,
+                    background: "linear-gradient(90deg, #5cc8e0, #1a8ca8)",
+                    boxShadow: "0 0 12px rgba(48,176,208,0.3)",
+                  }}
+                />
               </div>
             </div>
           )}
 
           {/* Quarter Indicators */}
-          <div className="flex flex-wrap gap-2 pt-2 depth-1">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", paddingTop: "0.5rem" }}>
             {["Q1", "Q2", "Q3", "Q4"].map((q) => {
               const actual = goal[`${q.toLowerCase()}Actual`];
               const hasCheckIn = actual !== null && actual !== undefined;
               return (
                 <div
                   key={q}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-transform hover:scale-105 ${
-                    hasCheckIn
-                      ? "bg-gradient-to-r from-green-500/20 to-green-500/10 text-green-700 dark:text-green-300 border border-green-500/30"
-                      : "bg-skin-100/80 dark:bg-skin-800/80 text-skin-500 dark:text-skin-400 border border-skin-200 dark:border-skin-700"
-                  }`}
+                  className="font-sans-body"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.375rem 0.75rem",
+                    borderRadius: "0.75rem",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    transition: "transform 0.3s ease",
+                    cursor: "default",
+                    background: hasCheckIn ? "rgba(34,197,94,0.08)" : "rgba(255,255,255,0.03)",
+                    color: hasCheckIn ? "#4ade80" : "rgba(237,232,228,0.4)",
+                    border: `1px solid ${hasCheckIn ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.06)"}`,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
                 >
-                  {hasCheckIn ? <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" /> : <Circle className="w-3.5 h-3.5" />}
+                  {hasCheckIn ? <CheckCircle2 className="w-3.5 h-3.5 text-[#4ade80]" /> : <Circle className="w-3.5 h-3.5" />}
                   <span>{q}</span>
-                  {hasCheckIn && <span className="font-bold ml-1 bg-green-500/20 px-1.5 py-0.5 rounded text-[10px]">{actual}</span>}
+                  {hasCheckIn && <span style={{ fontWeight: 800, marginLeft: "0.25rem", background: "rgba(34,197,94,0.15)", padding: "0.125rem 0.375rem", borderRadius: "0.25rem", fontSize: "0.625rem" }}>{actual}</span>}
                 </div>
               );
             })}
@@ -134,37 +223,75 @@ export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn 
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col gap-3 depth-3 border-l border-skin-200/50 dark:border-skin-800/50 pl-6 my-auto">
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", paddingLeft: "1.5rem", borderLeft: "1px solid rgba(255,255,255,0.06)", marginTop: "auto", marginBottom: "auto" }}>
           {isEditable && !goal.isShared && (
             <>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="btn-3d w-12 h-12 rounded-xl bg-skin-100 dark:bg-skin-800 border-skin-200 dark:border-skin-700 hover:bg-accent hover:text-white transition-all shadow-sm"
+              <button
+                className="login-btn"
+                style={{
+                  width: "3rem",
+                  height: "3rem",
+                  padding: 0,
+                  borderRadius: "0.75rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "#ede8e4",
+                }}
                 onClick={onEdit}
                 title="Edit Goal"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(48,176,208,0.1)";
+                  e.currentTarget.style.borderColor = "rgba(48,176,208,0.2)";
+                  e.currentTarget.style.color = "#5cc8e0";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                  e.currentTarget.style.color = "#ede8e4";
+                }}
               >
                 <Edit2 className="w-4 h-4" />
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="btn-3d w-12 h-12 rounded-xl bg-skin-100 dark:bg-skin-800 border-skin-200 dark:border-skin-700 hover:bg-destructive hover:text-white transition-all shadow-sm"
+              </button>
+              <button
+                className="login-btn"
+                style={{
+                  width: "3rem",
+                  height: "3rem",
+                  padding: 0,
+                  borderRadius: "0.75rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(239,68,68,0.06)",
+                  border: "1px solid rgba(239,68,68,0.1)",
+                  color: "#f87171",
+                }}
                 onClick={onDelete}
                 title="Delete Goal"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(239,68,68,0.15)";
+                  e.currentTarget.style.borderColor = "rgba(239,68,68,0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(239,68,68,0.06)";
+                  e.currentTarget.style.borderColor = "rgba(239,68,68,0.1)";
+                }}
               >
-                <Trash2 className="w-4 h-4 text-destructive group-hover:text-white" />
-              </Button>
+                <Trash2 className="w-4 h-4" />
+              </button>
             </>
           )}
           {!isEditable && (
-            <Button 
-              size="sm" 
-              className="btn-3d px-6 py-5 rounded-xl bg-gradient-to-r from-accent-light to-accent-dark hover:from-accent hover:to-accent-dark text-white font-bold shadow-lg shadow-accent/20"
+            <button
+              className="login-btn login-btn-primary"
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem" }}
               onClick={onCheckIn}
             >
               Check-in
-            </Button>
+            </button>
           )}
         </div>
       </div>

@@ -6,24 +6,24 @@ interface WeightageChartProps {
 }
 
 export function WeightageChart({ goals }: WeightageChartProps) {
-  // Premium 3D Portal Palette Colors
+  // 3-Flow-Shader Cyan Palette Colors
   const colors = [
-    "#ff7043", // accent
-    "#a07e6f", // skin-500
-    "#ffab91", // accent-light
-    "#8d6e63", // skin-600
-    "#d84315", // accent-dark
-    "#d2bab0", // skin-400
-    "#6d4c41", // skin-700
-    "#e0cec7", // skin-300
+    "#30b0d0", // accent-default
+    "#5cc8e0", // accent-light
+    "#1a8ca8", // accent-dark
+    "#4a8fa8", // skin-400
+    "#6bb3cc", // skin-300
+    "#2d5a73", // skin-500
+    "#9dd1e0", // skin-200
+    "#1e3a4d", // skin-600
   ];
   
   const total = goals.reduce((sum, g) => sum + Number(g.weightage), 0);
 
   if (goals.length === 0) {
     return (
-      <div className="progress-ring-3d w-28 h-28 rounded-full glass border-4 border-skin-200 dark:border-skin-800 flex items-center justify-center shadow-lg">
-        <span className="text-sm font-bold text-skin-400 dark:text-skin-500">0%</span>
+      <div className="progress-ring-3d w-28 h-28 rounded-full glass flex items-center justify-center" style={{ border: "3px solid rgba(255,255,255,0.06)" }}>
+        <span className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 700, color: "rgba(237,232,228,0.4)" }}>0%</span>
       </div>
     );
   }
@@ -33,7 +33,7 @@ export function WeightageChart({ goals }: WeightageChartProps) {
   return (
     <div className="progress-ring-3d relative w-28 h-28 flex items-center justify-center group">
       {/* 3D Holographic Glow Base */}
-      <div className="absolute inset-0 rounded-full bg-accent/10 blur-xl group-hover:bg-accent/20 transition-all duration-500"></div>
+      <div className="absolute inset-0 rounded-full blur-xl transition-all duration-500" style={{ background: "rgba(48,176,208,0.08)" }}></div>
 
       <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.15)] relative z-10">
         {/* Background circle */}
@@ -42,7 +42,7 @@ export function WeightageChart({ goals }: WeightageChartProps) {
           cy="18"
           r="15.915"
           fill="none"
-          stroke="rgba(160,126,111,0.15)"
+          stroke="rgba(255,255,255,0.06)"
           strokeWidth="3.5"
         />
         {/* Segments */}
@@ -75,18 +75,18 @@ export function WeightageChart({ goals }: WeightageChartProps) {
             cy="18"
             r="15.915"
             fill="none"
-            stroke="rgba(255,112,67,0.1)"
+            stroke="rgba(48,176,208,0.08)"
             strokeWidth="3.5"
             strokeDasharray={`${100 - total} ${total}`}
             strokeDashoffset={-total}
           />
         )}
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center relative z-20 pointer-events-none">
-        <span className="text-lg font-extrabold bg-gradient-to-r from-skin-900 to-accent dark:from-skin-50 dark:to-accent-light bg-clip-text text-transparent">
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
+        <span className="font-serif-display" style={{ fontSize: "1.125rem", fontWeight: 800, background: "linear-gradient(135deg, #5cc8e0, #1a8ca8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
           {total.toFixed(0)}%
         </span>
-        <span className="text-[9px] font-semibold text-skin-500 dark:text-skin-400 uppercase tracking-widest">Allocated</span>
+        <span className="font-sans-body" style={{ fontSize: "0.5625rem", fontWeight: 600, color: "rgba(237,232,228,0.4)", textTransform: "uppercase", letterSpacing: "0.15em" }}>Allocated</span>
       </div>
     </div>
   );
