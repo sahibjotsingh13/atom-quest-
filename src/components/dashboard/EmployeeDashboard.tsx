@@ -389,25 +389,25 @@ export function EmployeeDashboard() {
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", flex: 1, justifyContent: "center" }}>
                   {/* Goal Count Rule */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.75rem", color: goals.length >= 3 && goals.length <= 8 ? "#4ade80" : "rgba(237,232,228,0.6)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", fontSize: "0.75rem", color: goals.length >= 3 && goals.length <= 8 ? "#4ade80" : "rgba(237,232,228,0.6)" }}>
                     {goals.length >= 3 && goals.length <= 8 ? (
-                      <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
+                      <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0 mt-[2px]" />
                     ) : (
-                      <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0 mt-[2px]" />
                     )}
-                    <span style={{ opacity: goals.length >= 3 && goals.length <= 8 ? 0.6 : 1 }}>
+                    <span style={{ opacity: goals.length >= 3 && goals.length <= 8 ? 0.6 : 1, whiteSpace: "normal", wordWrap: "break-word" }}>
                       Roadmap contains 3-8 goals (Current: {goals.length})
                     </span>
                   </div>
 
                   {/* Weightage sum Rule */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.75rem", color: Math.abs(totalWeightage - 100) < 0.01 ? "#4ade80" : "rgba(237,232,228,0.6)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem", fontSize: "0.75rem", color: Math.abs(totalWeightage - 100) < 0.01 ? "#4ade80" : "rgba(237,232,228,0.6)" }}>
                     {Math.abs(totalWeightage - 100) < 0.01 ? (
-                      <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
+                      <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0 mt-[2px]" />
                     ) : (
-                      <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0 mt-[2px]" />
                     )}
-                    <span style={{ opacity: Math.abs(totalWeightage - 100) < 0.01 ? 0.6 : 1 }}>
+                    <span style={{ opacity: Math.abs(totalWeightage - 100) < 0.01 ? 0.6 : 1, whiteSpace: "normal", wordWrap: "break-word" }}>
                       Total weight matches 100% exactly (Current: {totalWeightage}%)
                     </span>
                   </div>
