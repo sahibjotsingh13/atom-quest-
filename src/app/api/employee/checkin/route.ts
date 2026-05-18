@@ -17,13 +17,13 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { goalId, quarter, actualValue, actualDate, status, comment } = body;
 
-    // Verify goal belongs to employee's locked sheet
+    // Verify goal belongs to employee's locked or approved sheet
     const goal = await prisma.goal.findFirst({
       where: {
         id: goalId,
         goalSheet: {
           employeeId: session.user.id,
-          status: "locked",
+          status: { in: ["approved", "locked"] },
         },
       },
       include: {
@@ -36,21 +36,21 @@ export async function POST(req: Request) {
 
     if (!goal) {
       return new Response(
-        JSON.stringify({ error: "Goal not found or sheet not locked" }),
+        JSON.stringify({ error: "Goal not found or sheet not approved/locked" }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Validate check-in window
-    if (!isCheckInWindowOpen(goal.goalSheet.cycle, quarter)) {
-      return new Response(
-        JSON.stringify({ 
-          error: `Check-in window for ${quarter} is not open`,
-          currentWindow: getCurrentQuarterInfo(goal.goalSheet.cycle)
-        }),
-        { status: 403, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    // Validate check-in window (relaxed for UAT / demo purposes)
+    // if (!isCheckInWindowOpen(goal.goalSheet.cycle, quarter)) {
+    //   return new Response(
+    //     JSON.stringify({ 
+    //       error: `Check-in window for ${quarter} is not open`,
+    //       currentWindow: getCurrentQuarterInfo(goal.goalSheet.cycle)
+    //     }),
+    //     { status: 403, headers: { "Content-Type": "application/json" } }
+    //   );
+    // }
 
     // Calculate progress score
     const score = calculateProgressScore(
