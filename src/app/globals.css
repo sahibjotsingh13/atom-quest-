@@ -482,12 +482,20 @@
   font-weight: 500;
   cursor: pointer;
   border: none;
+  transition: all 0.3s ease;
 }
 .login-btn-primary {
   background: linear-gradient(135deg, #ff8a65, #e64a19);
+  color: white;
+}
+
+.login-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(230, 74, 25, 0.4);
+  background: linear-gradient(135deg, #ff9e80, #f4511e);
 }
 
 .login-btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 4px 15px rgba(255, 112, 67, 0.25);
+  box-shadow: 0 4px 10px rgba(230, 74, 25, 0.2);
 }
