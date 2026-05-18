@@ -56,64 +56,25 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pendingApprovalsCount = teamData?.summary?.pendingApprovals ?? 0;
 
   useEffect(() => {
-    // Initialize theme - default to dark for flow shader
+    // Initialize theme
     const savedTheme = localStorage.getItem("theme") || "dark";
     setTheme(savedTheme);
     if (savedTheme === "dark") {
       document.documentElement.classList.add("dark");
-      document.getElementById("themeToggle")?.classList.add("active");
     } else {
       document.documentElement.classList.remove("dark");
-      document.getElementById("themeToggle")?.classList.remove("active");
     }
-
-    // Generate floating particles - copper/peach for skin theme
-    const container = document.getElementById("particles");
-    if (container && container.children.length === 0) {
-      const colors = ['#ff7043', '#ffab91', '#d84315', '#a07e6f', '#8d6e63', '#d2bab0'];
-      for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        const size = Math.random() * 20 + 5;
-        particle.style.width = size + 'px';
-        particle.style.height = size + 'px';
-        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.top = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 15 + 's';
-        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-        container.appendChild(particle);
-      }
-    }
-
-    // 3D Mouse Parallax Effect
-    const handleMouseMove = (e: MouseEvent) => {
-      const cards = document.querySelectorAll('.iso-card, .goal-stack-item');
-      const x = (window.innerWidth / 2 - e.pageX) / 50;
-      const y = (window.innerHeight / 2 - e.pageY) / 50;
-
-      cards.forEach((card: any, index) => {
-        const factor = (index % 3 + 1) * 0.5;
-        card.style.transform = `perspective(1000px) rotateY(${x * factor}deg) rotateX(${y * factor}deg) translateZ(10px)`;
-      });
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const toggleTheme = () => {
     const html = document.documentElement;
-    const toggle = document.getElementById('themeToggle');
 
     if (html.classList.contains('dark')) {
       html.classList.remove('dark');
-      toggle?.classList.remove('active');
       localStorage.setItem('theme', 'light');
       setTheme('light');
     } else {
       html.classList.add('dark');
-      toggle?.classList.add('active');
       localStorage.setItem('theme', 'dark');
       setTheme('dark');
     }
@@ -149,13 +110,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const filteredNav = navItems.filter((item) => item.roles.includes(role || ""));
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden", position: "relative", zIndex: 10, background: "#050a0f", color: "#ede8e4" }}>
-      {/* Floating Background Particles */}
-      <div id="particles" style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}></div>
-
-      {/* 3D Sidebar */}
+    <div className="flex h-screen overflow-hidden relative z-10 bg-[var(--background)] text-[var(--foreground)]">
+      {/* Sidebar */}
       <aside
-        className={`sidebar-3d ${sidebarOpen ? "open" : ""}`}
+        className={`sidebar ${sidebarOpen ? "open" : ""}`}
         style={{
           position: "fixed",
           top: 0,
@@ -167,34 +125,31 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           flexDirection: "column",
           zIndex: 50,
           transition: "all 0.3s ease",
-          background: "rgba(5, 10, 15, 0.85)",
-          backdropFilter: "blur(16px)",
-          borderRight: "1px solid rgba(255, 255, 255, 0.06)",
-          boxShadow: "5px 0 25px rgba(0,0,0,0.5)",
+          background: "var(--card-bg)",
+          borderRight: "1px solid var(--border)",
         }}
       >
         {/* Logo Area */}
-        <div style={{ padding: "1.5rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--border)" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none" }}>
             <div
               style={{
-                width: "3rem",
-                height: "3rem",
-                borderRadius: "0.75rem",
-                background: "linear-gradient(135deg, #5cc8e0, #1a8ca8)",
+                width: "2.5rem",
+                height: "2.5rem",
+                borderRadius: "0.5rem",
+                background: "var(--primary)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 4px 16px rgba(48,176,208,0.3)",
               }}
             >
-              <Atom className="w-6 h-6 text-white animate-spin-slow" />
+              <Atom className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-serif-display" style={{ fontSize: "1.125rem", fontWeight: 700, background: "linear-gradient(135deg, #5cc8e0, #1a8ca8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              <h1 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--foreground)" }}>
                 AtomQuest
               </h1>
-              <p className="font-sans-body" style={{ fontSize: "0.6875rem", color: "rgba(237,232,228,0.4)" }}>Goal Portal</p>
+              <p style={{ fontSize: "0.6875rem", color: "var(--muted-foreground)" }}>Goal Portal</p>
             </div>
           </Link>
         </div>
@@ -217,32 +172,32 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   alignItems: "center",
                   gap: "0.75rem",
                   padding: "0.75rem 1rem",
-                  borderRadius: "0.75rem",
-                  fontWeight: 600,
+                  borderRadius: "0.5rem",
+                  fontWeight: 500,
                   fontSize: "0.875rem",
-                  transition: "all 0.3s ease",
+                  transition: "all 0.2s ease",
                   textDecoration: "none",
-                  background: isActive ? "linear-gradient(90deg, rgba(255,112,67,0.12), transparent)" : "transparent",
-                  color: isActive ? "#ffab91" : "rgba(237,232,228,0.6)",
-                  borderLeft: isActive ? "3px solid #ff7043" : "3px solid transparent",
+                  background: isActive ? "var(--primary-light)" : "transparent",
+                  color: isActive ? "var(--primary)" : "var(--muted-foreground)",
+                  borderLeft: isActive ? "3px solid var(--primary)" : "3px solid transparent",
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-                    e.currentTarget.style.color = "#ede8e4";
+                    e.currentTarget.style.background = "var(--hover-bg)";
+                    e.currentTarget.style.color = "var(--foreground)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "rgba(237,232,228,0.6)";
+                    e.currentTarget.style.color = "var(--muted-foreground)";
                   }
                 }}
               >
-                <span style={{ color: isActive ? "#ff7043" : "inherit", transition: "color 0.3s ease" }}>{item.icon}</span>
+                <span style={{ color: isActive ? "var(--primary)" : "inherit", transition: "color 0.2s ease" }}>{item.icon}</span>
                 <span>{item.label}</span>
                 {item.label === "Approvals" && pendingApprovalsCount > 0 && (
-                  <span style={{ marginLeft: "auto", background: "#ff7043", color: "#050a0f", fontSize: "0.625rem", padding: "0.125rem 0.5rem", borderRadius: "9999px", fontWeight: 800 }}>
+                  <span style={{ marginLeft: "auto", background: "var(--primary)", color: "white", fontSize: "0.625rem", padding: "0.125rem 0.5rem", borderRadius: "9999px", fontWeight: 700 }}>
                     {pendingApprovalsCount}
                   </span>
                 )}
@@ -252,55 +207,61 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* User Profile */}
-        <div style={{ padding: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="glass" style={{ padding: "1rem", display: "flex", alignItems: "center", gap: "0.75rem", borderRadius: "1rem", marginBottom: "0.75rem", transition: "box-shadow 0.3s ease" }}>
+        <div style={{ padding: "1rem", borderTop: "1px solid var(--border)" }}>
+          <div style={{ padding: "0.75rem", display: "flex", alignItems: "center", gap: "0.75rem", borderRadius: "0.5rem", marginBottom: "0.75rem", background: "var(--primary-light)", border: "1px solid var(--border)" }}>
             <div
               style={{
                 width: "2.5rem",
                 height: "2.5rem",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+                background: "var(--primary)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 700,
-                fontSize: "0.75rem",
-                color: "#ede8e4",
-                border: "2px solid rgba(48,176,208,0.15)",
+                fontSize: "0.875rem",
+                color: "white",
                 flexShrink: 0,
               }}
             >
               {session.user?.firstName?.[0]}{session.user?.lastName?.[0]}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--foreground)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {session.user?.firstName} {session.user?.lastName}
               </p>
-              <p className="font-sans-body" style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.4)", textTransform: "capitalize" }}>
+              <p style={{ fontSize: "0.75rem", color: "var(--muted-foreground)", textTransform: "capitalize" }}>
                 {role}
               </p>
             </div>
-            <ChevronRight className="w-4 h-4" style={{ color: "rgba(237,232,228,0.3)", flexShrink: 0 }} />
+            <ChevronRight className="w-4 h-4" style={{ color: "var(--muted-foreground)", flexShrink: 0 }} />
           </div>
           <button
-            className="login-btn font-sans-body"
             style={{
               width: "100%",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               gap: "0.5rem",
-              fontSize: "0.8125rem",
-              background: "rgba(239,68,68,0.08)",
-              border: "1px solid rgba(239,68,68,0.15)",
-              color: "#f87171",
+              padding: "0.625rem",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              background: "transparent",
+              border: "1px solid var(--border)",
+              borderRadius: "0.5rem",
+              color: "var(--muted-foreground)",
+              transition: "all 0.2s ease",
             }}
             onClick={() => signOut({ callbackUrl: "/login" })}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(239,68,68,0.15)";
+              e.currentTarget.style.background = "var(--destructive-light)";
+              e.currentTarget.style.color = "var(--destructive)";
+              e.currentTarget.style.borderColor = "var(--destructive)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(239,68,68,0.08)";
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--muted-foreground)";
+              e.currentTarget.style.borderColor = "var(--border)";
             }}
           >
             <LogOut className="w-4 h-4" />
@@ -326,7 +287,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <main style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%", overflow: "hidden", marginLeft: "18rem" }}>
         {/* Top Navbar */}
-        <header className="glass" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "1rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 40 }}>
+        <header style={{ background: "var(--card-bg)", borderBottom: "1px solid var(--border)", padding: "1rem 2rem", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 40 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -369,13 +330,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
             {/* Theme Toggle */}
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <Sun className="w-4 h-4" style={{ color: "rgba(237,232,228,0.3)" }} />
-              <div
+              <Sun className="w-4 h-4" style={{ color: "var(--muted-foreground)" }} />
+              <button
                 id="themeToggle"
-                className={`switch-3d ${theme === "dark" ? "active" : ""}`}
+                className="w-10 h-5 rounded-full bg-[var(--border)] relative flex items-center px-1 transition-colors"
                 onClick={toggleTheme}
-              ></div>
-              <Moon className="w-4 h-4" style={{ color: "rgba(237,232,228,0.3)" }} />
+                style={{
+                  background: theme === "dark" ? "var(--primary)" : "var(--border)",
+                }}
+              >
+                <div 
+                  className="w-3 h-3 rounded-full bg-white transition-transform" 
+                  style={{
+                    transform: theme === "dark" ? "translateX(20px)" : "translateX(0)"
+                  }}
+                />
+              </button>
+              <Moon className="w-4 h-4" style={{ color: "var(--muted-foreground)" }} />
             </div>
 
             {/* Notifications */}
@@ -391,10 +362,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       <style jsx>{`
         @media (max-width: 1024px) {
-          .sidebar-3d {
+          .sidebar {
             transform: translateX(-100%) !important;
           }
-          .sidebar-3d.open {
+          .sidebar.open {
             transform: translateX(0) !important;
           }
           main {
@@ -405,7 +376,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           }
         }
         @media (min-width: 1025px) {
-          .sidebar-3d {
+          .sidebar {
             transform: translateX(0) !important;
             position: fixed !important;
           }
