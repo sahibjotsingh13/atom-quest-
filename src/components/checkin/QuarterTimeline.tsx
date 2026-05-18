@@ -27,6 +27,21 @@ export function QuarterTimeline({ goals, cycle }: QuarterTimelineProps) {
     const end = new Date(q.end);
     
     if (now >= start && now <= end) return { status: "open", isOpen: true };
+    
+    // For demo/UAT: if none of the quarters are currently in their start/end range,
+    // we determine which quarter is the fallback and mark it as open.
+    let fallbackName = "Q4";
+    for (const qr of quarters) {
+      if (qr.end && now <= new Date(qr.end)) {
+        fallbackName = qr.name;
+        break;
+      }
+    }
+    
+    if (q.name === fallbackName) {
+      return { status: "open", isOpen: true };
+    }
+    
     if (now > end) return { status: "closed", isOpen: false };
     return { status: "upcoming", isOpen: false };
   };

@@ -205,8 +205,9 @@ export function EmployeeDashboard() {
   const isLocked = sheet?.status === "locked" || sheet?.status === "approved";
   const isSubmitted = sheet?.status === "submitted";
   const isRejected = sheet?.status === "rejected";
-  const canEdit = !isLocked && !isSubmitted;
-  const canSubmit = canEdit && goals.length >= 3 && goals.length <= 8 && Math.abs(totalWeightage - 100) < 0.01;
+  // UAT/Demo relaxed editing rules
+  const canEdit = true;
+  const canSubmit = !isLocked && !isSubmitted && goals.length >= 3 && goals.length <= 8 && Math.abs(totalWeightage - 100) < 0.01;
 
   const handleAddGoal = (data: any) => {
     setError("");
@@ -537,6 +538,7 @@ export function EmployeeDashboard() {
                         setError(`Check-in window is currently closed. ${currentWindow ? `Next window: ${currentWindow.label}` : "No active cycle"}`);
                       }
                     }}
+                    canCheckIn={isLocked}
                   />
                 ))}
 

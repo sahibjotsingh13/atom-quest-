@@ -35,37 +35,39 @@ export function getQuarterStatus(cycle: any): WindowStatus | null {
     { name: "Q4", start: q4Start, end: q4End, label: "Q4 (March/April)" },
   ];
 
+  let openQuarter = null;
   for (const q of quarters) {
     if (now >= q.start && now <= q.end) {
-      return {
+      openQuarter = {
         quarter: q.name,
         isOpen: true,
         startDate: q.start,
         endDate: q.end,
         label: q.label,
       };
+      break;
     }
   }
 
-  // Check if we're in any quarter period but window closed
+  if (openQuarter) return openQuarter;
+
+  // Fallback for UAT/Demo purposes: find the first quarter that hasn't ended yet
+  // or default to Q4 if all have ended, and force isOpen: true!
+  let fallbackQuarter = quarters[3]; // Default to Q4
   for (const q of quarters) {
-    // Basic heuristic: if current month is within +- 1 month of the target month
-    // but not in the specific start/end range
-    const month = now.getMonth();
-    const startMonth = q.start.getMonth();
-    
-    if (Math.abs(month - startMonth) <= 1) {
-       return {
-        quarter: q.name,
-        isOpen: false,
-        startDate: q.start,
-        endDate: q.end,
-        label: q.label,
-      };
+    if (now <= q.end) {
+      fallbackQuarter = q;
+      break;
     }
   }
 
-  return null;
+  return {
+    quarter: fallbackQuarter.name,
+    isOpen: true,
+    startDate: fallbackQuarter.start,
+    endDate: fallbackQuarter.end,
+    label: `${fallbackQuarter.label} (Demo Mode)`,
+  };
 }
 
 /**
@@ -82,30 +84,7 @@ export async function getCurrentQuarter(cycleId: string): Promise<WindowStatus |
 }
 
 export function isCheckInWindowOpen(cycle: any, quarter: string): boolean {
-  const now = new Date();
-  
-  // Ensure we have Date objects
-  const q1Start = new Date(cycle.q1Start);
-  const q1End = new Date(cycle.q1End);
-  const q2Start = new Date(cycle.q2Start);
-  const q2End = new Date(cycle.q2End);
-  const q3Start = new Date(cycle.q3Start);
-  const q3End = new Date(cycle.q3End);
-  const q4Start = new Date(cycle.q4Start);
-  const q4End = new Date(cycle.q4End);
-
-  switch (quarter) {
-    case "Q1":
-      return now >= q1Start && now <= q1End;
-    case "Q2":
-      return now >= q2Start && now <= q2End;
-    case "Q3":
-      return now >= q3Start && now <= q3End;
-    case "Q4":
-      return now >= q4Start && now <= q4End;
-    default:
-      return false;
-  }
+  return true; // Force true for UAT/Demo so check-ins are always enabled
 }
 
 export function getQuarterLabel(quarter: string): string {

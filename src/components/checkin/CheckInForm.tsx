@@ -103,26 +103,26 @@ export function CheckInForm({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg bg-skin-900 border-skin-700 text-skin-100 shadow-2xl shadow-black/50">
+      <DialogContent className="max-w-lg bg-[#0a1118]/95 border border-white/10 text-[#ede8e4] shadow-2xl backdrop-blur-xl rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-skin-50 font-serif-display font-bold text-xl">
-            <Target className="w-5 h-5 text-accent-light" />
+          <DialogTitle className="flex items-center gap-2 text-white font-serif-display font-bold text-xl">
+            <Target className="w-5 h-5 text-[#ff7043]" />
             {quarter} Check-in: {goal.title}
           </DialogTitle>
         </DialogHeader>
 
         {error && (
-          <Alert variant="destructive" className="bg-red-950/50 border-red-800 text-red-200 font-sans-body">
+          <Alert variant="destructive" className="bg-red-950/30 border border-red-800/50 text-red-200 font-sans-body">
             <AlertCircle className="h-4 w-4 text-red-400" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {/* Goal Info */}
-        <div className="glass p-4 rounded-xl bg-skin-800/40 border border-skin-700 space-y-1.5 font-sans-body">
+        <div className="glass p-4 rounded-xl bg-white/5 border border-white/10 space-y-1.5 font-sans-body">
           <div className="flex justify-between text-sm">
-            <span className="text-skin-400 font-medium">Target:</span>
-            <span className="font-bold text-skin-50">
+            <span className="text-white/60 font-medium">Target:</span>
+            <span className="font-bold text-white">
               {isTimeline
                 ? (goal.targetDate ? new Date(goal.targetDate).toLocaleDateString() : "No Date")
                 : isPercentage
@@ -131,12 +131,12 @@ export function CheckInForm({
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-skin-400 font-medium">UoM:</span>
-            <span className="font-bold text-skin-50">{goal.uomType?.name}</span>
+            <span className="text-white/60 font-medium">UoM:</span>
+            <span className="font-bold text-white">{goal.uomType?.name}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-skin-400 font-medium">Weightage:</span>
-            <span className="font-bold text-accent-light">{goal.weightage}%</span>
+            <span className="text-white/60 font-medium">Weightage:</span>
+            <span className="font-bold text-[#ff7043]">{goal.weightage}%</span>
           </div>
         </div>
 
@@ -144,32 +144,32 @@ export function CheckInForm({
           {/* Actual Input - Dynamic based on UoM */}
           {isTimeline ? (
             <div className="space-y-2">
-              <Label className="text-skin-200 font-medium">
-                Completion Date <span className="text-accent-light">*</span>
+              <Label className="text-white/80 font-medium">
+                Completion Date <span className="text-[#ff7043]">*</span>
               </Label>
               <Input
                 type="date"
-                className="bg-skin-950 border-skin-700 text-skin-100 focus:border-accent-default focus:ring-accent-default"
+                className="bg-[#050a0f] border-white/10 text-white placeholder:text-white/30 focus:border-[#ff7043]/50 focus:ring-[#ff7043]/50"
                 value={actualDate}
                 onChange={(e) => {
                   setActualDate(e.target.value);
                   setPreviewScore(null);
                 }}
               />
-              <p className="text-xs text-skin-400">
+              <p className="text-xs text-white/40">
                 Target date: {goal.targetDate ? new Date(goal.targetDate).toLocaleDateString() : "No Date"}
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              <Label className="text-skin-200 font-medium">
-                Actual Achievement <span className="text-accent-light">*</span>
+              <Label className="text-white/80 font-medium">
+                Actual Achievement <span className="text-[#ff7043]">*</span>
               </Label>
               <div className="flex items-center gap-3">
                 <Input
                   type="number"
                   step="any"
-                  className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:border-accent-default focus:ring-accent-default"
+                  className="bg-[#050a0f] border-white/10 text-white placeholder:text-white/30 focus:border-[#ff7043]/50 focus:ring-[#ff7043]/50"
                   value={actualValue}
                   onChange={(e) => {
                     setActualValue(e.target.value);
@@ -177,10 +177,10 @@ export function CheckInForm({
                   }}
                   placeholder={isZeroBased ? "0 = Success, >0 = Failure" : "Enter actual value"}
                 />
-                {isPercentage && <span className="text-skin-400 font-semibold">%</span>}
+                {isPercentage && <span className="text-white/60 font-semibold">%</span>}
               </div>
               {isZeroBased && (
-                <p className="text-xs text-skin-400">
+                <p className="text-xs text-white/40">
                   Zero-based: Enter 0 for success, any positive number for failure
                 </p>
               )}
@@ -189,27 +189,27 @@ export function CheckInForm({
 
           {/* Status */}
           <div className="space-y-2">
-            <Label className="text-skin-200 font-medium">
-              Status <span className="text-accent-light">*</span>
+            <Label className="text-white/80 font-medium">
+              Status <span className="text-[#ff7043]">*</span>
             </Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100">
+              <SelectTrigger className="bg-[#050a0f] border-white/10 text-white focus:border-[#ff7043]/50 focus:ring-[#ff7043]/50">
                 <SelectValue placeholder="Select status..." />
               </SelectTrigger>
-              <SelectContent className="bg-skin-900 border-skin-700 text-skin-100">
-                <SelectItem value="not_started" className="focus:bg-skin-800 focus:text-skin-50">Not Started</SelectItem>
-                <SelectItem value="on_track" className="focus:bg-skin-800 focus:text-skin-50">On Track</SelectItem>
-                <SelectItem value="completed" className="focus:bg-skin-800 focus:text-skin-50">Completed</SelectItem>
-                <SelectItem value="at_risk" className="focus:bg-skin-800 focus:text-skin-50">At Risk</SelectItem>
+              <SelectContent className="bg-[#0a1118] border-white/10 text-[#ede8e4] backdrop-blur-xl">
+                <SelectItem value="not_started" className="focus:bg-white/5 focus:text-white text-white/80">Not Started</SelectItem>
+                <SelectItem value="on_track" className="focus:bg-white/5 focus:text-white text-white/80">On Track</SelectItem>
+                <SelectItem value="completed" className="focus:bg-white/5 focus:text-white text-white/80">Completed</SelectItem>
+                <SelectItem value="at_risk" className="focus:bg-white/5 focus:text-white text-white/80">At Risk</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Comment */}
           <div className="space-y-2">
-            <Label className="text-skin-200 font-medium">Comment</Label>
+            <Label className="text-white/80 font-medium">Comment</Label>
             <Textarea
-              className="bg-skin-950 border-skin-700 text-skin-100 placeholder:text-skin-500 focus:border-accent-default focus:ring-accent-default"
+              className="bg-[#050a0f] border-white/10 text-white placeholder:text-white/30 focus:border-[#ff7043]/50 focus:ring-[#ff7043]/50"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Describe your progress, challenges, or achievements..."
@@ -223,14 +223,14 @@ export function CheckInForm({
               type="button"
               variant="outline"
               size="sm"
-              className="border-skin-700 text-skin-200 hover:bg-skin-800 hover:text-skin-100"
+              className="border-white/10 text-white/80 hover:bg-white/5 hover:text-white bg-transparent"
               onClick={calculatePreview}
             >
-              <Calculator className="w-4 h-4 mr-1.5 text-accent-light" />
+              <Calculator className="w-4 h-4 mr-1.5 text-[#ff7043]" />
               Preview Score
             </Button>
             {previewScore !== null && (
-              <div className="flex items-center gap-2 glass px-3 py-1.5 rounded-lg bg-skin-800/50 border border-skin-700">
+              <div className="flex items-center gap-2 glass px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                 <TrendingUp className="w-4 h-4 text-[#5cc8e0]" />
                 <span className="text-sm font-bold text-[#5cc8e0]">
                   {previewScore.toFixed(1)}%
@@ -240,11 +240,11 @@ export function CheckInForm({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-skin-800">
-            <Button type="button" variant="outline" onClick={onClose} className="border-skin-700 text-skin-200 hover:bg-skin-800 hover:text-skin-100">
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Button type="button" variant="outline" onClick={onClose} className="border-white/10 text-white/80 hover:bg-white/5 hover:text-white bg-transparent">
               Cancel
             </Button>
-            <Button type="submit" className="bg-accent-default hover:bg-accent-dark text-white font-semibold shadow-lg shadow-accent-default/20">
+            <Button type="submit" className="bg-[#ff7043] hover:bg-[#d84315] text-white font-semibold shadow-lg shadow-[#ff7043]/20 border-0">
               Save Check-in
             </Button>
           </div>

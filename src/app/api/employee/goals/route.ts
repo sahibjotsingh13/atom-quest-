@@ -15,12 +15,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { goalSheetId, title, description, thrustAreaId, uomTypeId, targetValue, targetDate, weightage } = body;
 
-    // Verify sheet belongs to employee and is in draft or rejected status
+    // Verify sheet belongs to employee (relaxed status checks for UAT / demo)
     const sheet = await prisma.goalSheet.findFirst({
       where: {
         id: goalSheetId,
         employeeId: session.user.id,
-        status: { in: ["draft", "rejected"] },
       },
       include: { goals: true },
     });

@@ -10,9 +10,10 @@ interface GoalCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onCheckIn: () => void;
+  canCheckIn?: boolean;
 }
 
-export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn }: GoalCardProps) {
+export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn, canCheckIn }: GoalCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "not_started": return { bg: "rgba(255,255,255,0.04)", text: "rgba(237,232,228,0.6)", border: "rgba(255,255,255,0.08)" };
@@ -284,7 +285,7 @@ export function GoalCard({ goal, index, isEditable, onEdit, onDelete, onCheckIn 
               </button>
             </>
           )}
-          {!isEditable && (
+          {canCheckIn && (
             <button
               className="login-btn login-btn-primary"
               style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem" }}
