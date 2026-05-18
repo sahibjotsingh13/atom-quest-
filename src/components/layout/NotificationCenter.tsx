@@ -53,8 +53,14 @@ export function NotificationCenter() {
       case "goal_submitted": return "📝";
       case "goal_approved": return "✅";
       case "goal_rejected": return "❌";
-      case "checkin_reminder": return "⏰";
+      case "goal_locked": return "🔒";
+      case "goal_unlocked":
       case "sheet_unlocked": return "🔓";
+      case "checkin_reminder": return "⏰";
+      case "checkin_submitted": return "📥";
+      case "checkin_approved":
+      case "checkin_acknowledged": return "👍";
+      case "checkin_feedback": return "💬";
       default: return "📢";
     }
   };
@@ -63,28 +69,29 @@ export function NotificationCenter() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
-          <button className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
+          <button className="relative p-2 text-slate-400 hover:text-[#ff7043] hover:bg-white/5 rounded-lg transition-colors">
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#ff7043] rounded-full ring-2 ring-[#050a0f] animate-pulse" />
             )}
           </button>
         }
       />
-      <PopoverContent className="w-96 p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold">Notifications</h3>
+      <PopoverContent className="w-96 p-0 bg-[#0a1118]/95 border border-white/10 text-[#ede8e4] backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" align="end">
+        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-[#050a0f]/50">
+          <h3 className="font-semibold text-white">Notifications</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => markAllRead.mutate()}
               disabled={markAllRead.isPending}
+              className="text-[#ffab91] hover:text-white hover:bg-white/5"
             >
               {markAllRead.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Check className="w-4 h-4 mr-1" />
+                <Check className="w-4 h-4 mr-1 text-[#ff7043]" />
               )}
               Mark all read
             </Button>
@@ -92,35 +99,40 @@ export function NotificationCenter() {
         </div>
         
         <ScrollArea className="h-80">
-          {notifications.length === 0 ? (
+          {isLoading ? (
             <div className="p-8 text-center text-slate-500">
-              <Bell className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+              <Loader2 className="w-8 h-8 mx-auto mb-2 text-[#ff7043] animate-spin" />
+              <p>Loading notifications...</p>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">
+              <Bell className="w-8 h-8 mx-auto mb-2 text-white/20" />
               <p>No notifications</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-white/5">
               {notifications.map((notification: Notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 hover:bg-slate-50 transition-colors ${
-                    !notification.isRead ? "bg-blue-50/50" : ""
+                  className={`p-4 hover:bg-white/5 transition-colors cursor-pointer ${
+                    !notification.isRead ? "bg-[#ff7043]/5" : ""
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-lg">{getCategoryIcon(notification.category)}</span>
+                    <span className="text-lg flex-shrink-0">{getCategoryIcon(notification.category)}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className={`text-sm font-medium ${!notification.isRead ? "text-[#ffab91]" : "text-[#ede8e4]"}`}>
                         {notification.title}
                       </p>
-                      <p className="text-sm text-slate-600 mt-0.5 line-clamp-2">
+                      <p className="text-xs text-slate-400 mt-1 line-clamp-3 leading-relaxed">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">
+                      <p className="text-[10px] text-slate-500 mt-1.5">
                         {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                       </p>
                     </div>
                     {!notification.isRead && (
-                      <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />
+                      <span className="w-2 h-2 bg-[#ff7043] rounded-full mt-1.5 flex-shrink-0 animate-pulse" />
                     )}
                   </div>
                 </div>
@@ -132,3 +144,4 @@ export function NotificationCenter() {
     </Popover>
   );
 }
+

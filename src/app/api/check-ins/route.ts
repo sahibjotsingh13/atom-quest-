@@ -132,7 +132,8 @@ export async function POST(req: NextRequest) {
     await prisma.notification.create({
       data: {
         userId: goal.goalSheet.employee.managerId,
-        type: "checkin_submitted",
+        type: "in_app",
+        category: "checkin_submitted",
         title: `${quarter} Check-in Submitted`,
         message: `${goal.goalSheet.employee.firstName} ${goal.goalSheet.employee.lastName} logged a ${quarter} check-in for "${goal.title}".`,
         deepLink: `/dashboard`,

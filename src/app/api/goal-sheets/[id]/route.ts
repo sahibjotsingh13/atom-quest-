@@ -86,7 +86,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       await prisma.notification.create({
         data: {
           userId: sheet.employee.managerId,
-          type: "goal_submitted",
+          type: "in_app",
+          category: "goal_submitted",
           title: "New Goal Sheet Pending Review",
           message: `${sheet.employee.firstName} ${sheet.employee.lastName} (${sheet.employee.employeeId}) has submitted their goal sheet for approval.`,
           deepLink: `/dashboard`,
@@ -104,7 +105,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     await prisma.notification.create({
       data: {
         userId: sheet.employeeId,
-        type: "goal_approved",
+        type: "in_app",
+        category: "goal_approved",
         title: "Goal Sheet Approved! 🎉",
         message: `Your goal sheet has been reviewed and approved. Your goals are now active.`,
         deepLink: `/dashboard`,
@@ -120,7 +122,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     await prisma.notification.create({
       data: {
         userId: sheet.employeeId,
-        type: "goal_rejected",
+        type: "in_app",
+        category: "goal_rejected",
         title: "Goal Sheet Returned for Rework",
         message: rejectionReason
           ? `Your manager returned your goal sheet. Reason: ${rejectionReason}`
@@ -139,7 +142,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     await prisma.notification.create({
       data: {
         userId: sheet.employeeId,
-        type: "goal_locked",
+        type: "in_app",
+        category: "goal_locked",
         title: "Goal Sheet Locked",
         message: `Your goal sheet has been locked. Quarterly achievement tracking is now active.`,
         deepLink: `/dashboard`,

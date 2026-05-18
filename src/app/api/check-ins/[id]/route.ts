@@ -35,5 +35,34 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     include: { goal: true, manager: true },
   });
 
+  // Notify employee if manager acknowledges or comments on check-in
+  if ((body.isAcknowledged === true || (body.managerComment !== undefined && body.managerComment.trim().length > 0)) && (isManager || isAdmin)) {
+    let title = `${checkIn.quarter} Check-in Reviewed`;
+    let message = `Your check-in for "${checkIn.goal.title}" has been reviewed.`;
+    let category = "checkin_feedback";
+    
+    if (body.isAcknowledged === true) {
+      title = `${checkIn.quarter} Check-in Acknowledged`;
+      message = `Your check-in for "${checkIn.goal.title}" has been acknowledged by ${session.user.firstName} ${session.user.lastName}.`;
+      category = "checkin_acknowledged";
+    } else if (body.managerComment) {
+      title = `New Manager Feedback on ${checkIn.quarter} Check-in`;
+      message = `${session.user.firstName} ${session.user.lastName} added a comment on your ${checkIn.quarter} check-in for "${checkIn.goal.title}".`;
+      category = "checkin_feedback";
+    }
+
+    await prisma.notification.create({
+      data: {
+        userId: checkIn.goal.goalSheet.employeeId,
+        type: "in_app",
+        category,
+        title,
+        message,
+        deepLink: `/employee/checkins`,
+        metadata: { checkInId: checkIn.id, goalId: checkIn.goalId, quarter: checkIn.quarter },
+      },
+    });
+  }
+
   return NextResponse.json(updated);
 }
