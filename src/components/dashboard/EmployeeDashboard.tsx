@@ -55,7 +55,7 @@ export function EmployeeDashboard() {
   const { data: uomTypes = [] } = useQuery({
     queryKey: ["uomTypes"],
     queryFn: async () => {
-      const res = await fetch("/api/master/uom-types");
+      const res = await fetch("/api/uom-types");
       if (!res.ok) return [];
       return res.json();
     },
@@ -64,7 +64,7 @@ export function EmployeeDashboard() {
   const { data: thrustAreas = [] } = useQuery({
     queryKey: ["thrustAreas"],
     queryFn: async () => {
-      const res = await fetch("/api/master/thrust-areas");
+      const res = await fetch("/api/thrust-areas");
       if (!res.ok) return [];
       return res.json();
     },
@@ -464,27 +464,38 @@ export function EmployeeDashboard() {
                 </div>
               </div>
 
-              {/* Requirement Hints */}
+              {/* Submission Checklist */}
               {canEdit && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", paddingTop: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                  {totalWeightage !== 100 && (
-                    <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.15)", background: "rgba(245,158,11,0.05)", fontSize: "0.8125rem", fontWeight: 600 }}>
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>{totalWeightage < 100 ? `Allocate ${(100 - totalWeightage).toFixed(1)}% more weightage to reach exactly 100%.` : `Reduce weightage by ${(totalWeightage - 100).toFixed(1)}% to reach exactly 100%.`}</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(237,232,228,0.4)", fontWeight: 700 }}>
+                    Goal Sheet Requirements
+                  </span>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+                    {/* Goal Count Requirement */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.8125rem", color: goals.length >= 3 && goals.length <= 8 ? "#4ade80" : "rgba(237,232,228,0.65)" }}>
+                      {goals.length >= 3 && goals.length <= 8 ? (
+                        <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0" />
+                      )}
+                      <span style={{ textDecoration: goals.length >= 3 && goals.length <= 8 ? "line-through" : "none", opacity: goals.length >= 3 && goals.length <= 8 ? 0.5 : 1 }}>
+                        Add between 3 and 8 goals (Current: {goals.length})
+                      </span>
                     </div>
-                  )}
-                  {goals.length < 3 && (
-                    <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.15)", background: "rgba(245,158,11,0.05)", fontSize: "0.8125rem", fontWeight: 600 }}>
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>Add at least {3 - goals.length} more goal(s). A minimum of 3 goals is required.</span>
+
+                    {/* Weightage Requirement */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.8125rem", color: Math.abs(totalWeightage - 100) < 0.01 ? "#4ade80" : "rgba(237,232,228,0.65)" }}>
+                      {Math.abs(totalWeightage - 100) < 0.01 ? (
+                        <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0" />
+                      )}
+                      <span style={{ textDecoration: Math.abs(totalWeightage - 100) < 0.01 ? "line-through" : "none", opacity: Math.abs(totalWeightage - 100) < 0.01 ? 0.5 : 1 }}>
+                        Allocate exactly 100% total weightage (Current: {totalWeightage.toFixed(1)}%)
+                      </span>
                     </div>
-                  )}
-                  {totalWeightage === 100 && goals.length >= 3 && (
-                    <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#4ade80", border: "1px solid rgba(34,197,94,0.15)", background: "rgba(34,197,94,0.05)", fontSize: "0.8125rem", fontWeight: 700 }}>
-                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>All weightage and goal count requirements successfully met.</span>
-                    </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>

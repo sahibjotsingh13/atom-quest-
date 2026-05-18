@@ -2,6 +2,12 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const unlockSchema = z.object({
+  sheetId: z.string().uuid("Invalid sheet ID"),
+  reason: z.string().min(10, "Reason must be at least 10 characters"),
+});
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -11,18 +17,16 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { sheetId, reason } = await req.json();
+    const body = await req.json();
+    const validated = unlockSchema.parse(body);
+    const { sheetId, reason } = validated;
 
-    if (!reason || reason.trim().length < 10) {
-      return new Response(
-        JSON.stringify({ error: "Reason must be at least 10 characters" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
+    // First check if the sheet exists
     const sheet = await prisma.goalSheet.findUnique({
       where: { id: sheetId },
-      include: { employee: true, goals: true },
+      include: {
+        employee: true,
+      }
     });
 
     if (!sheet) {
@@ -89,6 +93,12 @@ export async function POST(req: Request) {
       sheet: updated,
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: "Validation failed", details: error.issues }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
     console.error("Error unlocking sheet:", error);
     return new Response("Internal server error", { status: 500 });
   }

@@ -7,18 +7,22 @@ dotenv.config(); // also load .env
 const prisma = new PrismaClient();
 
 async function main() {
-  // Clean existing data
+  // Clean existing data in correct dependency order to prevent foreign key violations
   await prisma.$transaction([
+    prisma.auditLog.deleteMany(),
+    prisma.escalation.deleteMany(),
+    prisma.notification.deleteMany(),
     prisma.checkIn.deleteMany(),
     prisma.goal.deleteMany(),
     prisma.goalSheet.deleteMany(),
+    prisma.escalationRule.deleteMany(),
     prisma.cycle.deleteMany(),
     prisma.user.deleteMany(),
-    prisma.department.deleteMany(),
     prisma.thrustArea.deleteMany(),
+    prisma.department.deleteMany(),
     prisma.uomType.deleteMany(),
-    prisma.escalationRule.deleteMany(),
   ]);
+
 
   // Create UoM Types
   const uomTypes = await prisma.$transaction([

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { z } from "zod";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -60,7 +61,13 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    const { escalationId, status, resolutionNotes } = await req.json();
+    const body = await req.json();
+    const updateSchema = z.object({
+      escalationId: z.string().uuid("Invalid escalation ID"),
+      status: z.enum(["open", "resolved", "dismissed"]),
+      resolutionNotes: z.string().optional(),
+    });
+    const { escalationId, status, resolutionNotes } = updateSchema.parse(body);
 
     const escalation = await prisma.escalation.update({
       where: { id: escalationId },
@@ -74,6 +81,12 @@ export async function PATCH(req: Request) {
 
     return Response.json(escalation);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: "Validation failed", details: error.issues }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
     console.error("Error updating escalation:", error);
     return new Response("Internal server error", { status: 500 });
   }

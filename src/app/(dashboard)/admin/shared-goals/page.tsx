@@ -4,26 +4,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Loader2, Plus, Users, Target, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Plus, Users, Target, ChevronDown, ChevronUp, Sparkles, Network } from "lucide-react";
 
 export default function AdminSharedGoalsPage() {
   const queryClient = useQueryClient();
@@ -81,89 +62,123 @@ export default function AdminSharedGoalsPage() {
     },
   });
 
-  const statusColors: Record<string, string> = {
-    not_started: "bg-slate-100 text-slate-600",
-    on_track: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
-    at_risk: "bg-amber-100 text-amber-700",
+  const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
+    not_started: { bg: "rgba(255,255,255,0.06)",  text: "rgba(237,232,228,0.5)" },
+    on_track:    { bg: "rgba(59,130,246,0.15)",   text: "#60a5fa" },
+    completed:   { bg: "rgba(34,197,94,0.15)",    text: "#22c55e" },
+    at_risk:     { bg: "rgba(245,158,11,0.15)",   text: "#fbbf24" },
   };
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Shared Goals</h1>
-            <p className="text-slate-500">Push departmental KPIs to employees</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "64rem", margin: "0 auto" }}>
+        {/* Header */}
+        <div className="hero-banner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
+              <Network className="w-5 h-5 text-[#30b0d0]" />
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#30b0d0", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Admin
+              </span>
+            </div>
+            <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "#ffffff", marginBottom: "0.25rem" }}>
+              Shared Goals
+            </h1>
+            <p style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)" }}>
+              Push departmental KPIs and cascaded objectives to employees
+            </p>
           </div>
-          <Button onClick={() => setOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
+          <button
+            onClick={() => setOpen(true)}
+            className="login-button"
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1.25rem", fontSize: "0.875rem", width: "auto", margin: 0 }}
+          >
+            <Plus className="w-4 h-4" />
             Create Shared Goal
-          </Button>
+          </button>
         </div>
 
+        {/* Content */}
         {isLoading ? (
-          <div className="flex items-center justify-center h-48">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "16rem" }}>
+            <Loader2 className="w-8 h-8 animate-spin text-[#30b0d0]" />
           </div>
         ) : (
-          <div className="space-y-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {(sharedGoals || []).map((goal: any) => (
-              <Card key={goal.id}>
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-slate-900">{goal.title}</h3>
-                        <Badge variant="outline" className="text-xs">{goal.uomType?.name}</Badge>
-                      </div>
-                      <p className="text-sm text-slate-500">{goal.thrustArea?.name}</p>
+              <div key={goal.id} className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
+                      <h3 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#ede8e4" }}>{goal.title}</h3>
+                      <span style={{ fontSize: "0.6875rem", fontWeight: 700, padding: "0.25rem 0.625rem", borderRadius: "9999px", background: "rgba(255,255,255,0.06)", color: "rgba(237,232,228,0.6)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                        {goal.uomType?.name}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <Users className="w-4 h-4" />
-                        <span>{goal.childGoals?.length ?? 0} recipients</span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setExpanded(expanded === goal.id ? null : goal.id)}
-                      >
-                        {expanded === goal.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </Button>
-                    </div>
+                    <p style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.45)" }}>
+                      Thrust Area: <span style={{ color: "#30b0d0" }}>{goal.thrustArea?.name}</span>
+                    </p>
                   </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)", background: "rgba(255,255,255,0.03)", padding: "0.375rem 0.75rem", borderRadius: "0.5rem" }}>
+                      <Users className="w-4 h-4" />
+                      <span style={{ fontWeight: 600 }}>{goal.childGoals?.length ?? 0}</span> recipients
+                    </div>
+                    <button
+                      onClick={() => setExpanded(expanded === goal.id ? null : goal.id)}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "2rem", height: "2rem", borderRadius: "0.5rem", background: expanded === goal.id ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "#ede8e4", cursor: "pointer", transition: "all 0.2s ease" }}
+                    >
+                      {expanded === goal.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
 
-                  {expanded === goal.id && goal.childGoals?.length > 0 && (
-                    <div className="mt-4 border-t border-slate-100 pt-4 space-y-2">
-                      {goal.childGoals.map((child: any) => (
-                        <div key={child.id} className="flex items-center justify-between text-sm">
-                          <span className="text-slate-700">
-                            {child.goalSheet?.employee?.firstName} {child.goalSheet?.employee?.lastName}
-                            <span className="text-slate-400 ml-2">· {child.goalSheet?.employee?.employeeId}</span>
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <Badge className={`text-xs ${statusColors[child.status] || "bg-slate-100"}`}>
+                {expanded === goal.id && goal.childGoals?.length > 0 && (
+                  <div style={{ marginTop: "0.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    {goal.childGoals.map((child: any) => {
+                      const s = STATUS_STYLE[child.status] || STATUS_STYLE.not_started;
+                      return (
+                        <div key={child.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.625rem 1rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.02)" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#ede8e4" }}>
+                              {child.goalSheet?.employee?.firstName} {child.goalSheet?.employee?.lastName}
+                            </span>
+                            <span style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.3)" }}>
+                              · {child.goalSheet?.employee?.employeeId}
+                            </span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                            <span style={{ fontSize: "0.6875rem", fontWeight: 700, padding: "0.2rem 0.5rem", borderRadius: "9999px", background: s.bg, color: s.text, textTransform: "capitalize" }}>
                               {child.status?.replace(/_/g, " ")}
-                            </Badge>
-                            <span className="text-slate-500">{Number(child.progressScore || 0).toFixed(1)}%</span>
+                            </span>
+                            <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "rgba(237,232,228,0.5)", width: "3rem", textAlign: "right" }}>
+                              {Number(child.progressScore || 0).toFixed(1)}%
+                            </span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             ))}
 
             {(!sharedGoals || sharedGoals.length === 0) && (
-              <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-300">
-                <Target className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">No shared goals yet</h3>
-                <p className="text-slate-500 mb-4">Push departmental KPIs to your team.</p>
-                <Button onClick={() => setOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" /> Create Shared Goal
-                </Button>
+              <div className="glass" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "5rem 2rem", borderRadius: "1rem", textAlign: "center", gap: "1.25rem" }}>
+                <div style={{ width: "4rem", height: "4rem", borderRadius: "50%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Target className="w-8 h-8 text-[rgba(237,232,228,0.2)]" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#ede8e4", marginBottom: "0.375rem" }}>No shared goals yet</h3>
+                  <p style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.4)" }}>Push departmental KPIs to your team to align organizational objectives.</p>
+                </div>
+                <button
+                  onClick={() => setOpen(true)}
+                  className="login-button"
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1.25rem", fontSize: "0.875rem", width: "auto", margin: 0, marginTop: "0.5rem" }}
+                >
+                  <Plus className="w-4 h-4" /> Create Shared Goal
+                </button>
               </div>
             )}
           </div>
@@ -171,81 +186,135 @@ export default function AdminSharedGoalsPage() {
       </div>
 
       {/* Create Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Create Shared Goal</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
+      {open && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(5,10,15,0.7)", backdropFilter: "blur(6px)" }} onClick={() => setOpen(false)} />
+          <div className="glass" style={{ position: "relative", zIndex: 1, borderRadius: "1.25rem", padding: "2rem", width: "90%", maxWidth: "36rem", display: "flex", flexDirection: "column", gap: "1.5rem", maxHeight: "90vh", overflowY: "auto" }}>
             <div>
-              <Label>Title *</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Achieve 95% Customer Satisfaction" />
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#ede8e4", marginBottom: "0.25rem" }}>Create Shared Goal</h2>
+              <p style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.5)" }}>This goal will be automatically added to the goal sheets of selected employees.</p>
             </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
               <div>
-                <Label>Thrust Area *</Label>
-                <Select value={form.thrustAreaId} onValueChange={(v) => setForm({ ...form, thrustAreaId: v || "" })}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.5rem" }}>Title *</label>
+                <input
+                  className="login-input"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="e.g. Achieve 95% Customer Satisfaction"
+                  style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.875rem" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.5rem" }}>Description</label>
+                <textarea
+                  className="login-input"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  rows={2}
+                  style={{ width: "100%", resize: "vertical", padding: "0.75rem 1rem", fontSize: "0.875rem" }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.5rem" }}>Thrust Area *</label>
+                  <select
+                    className="login-input"
+                    value={form.thrustAreaId}
+                    onChange={(e) => setForm({ ...form, thrustAreaId: e.target.value })}
+                    style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.875rem" }}
+                  >
+                    <option value="">Select...</option>
                     {(masterData?.thrustAreas || []).map((t: any) => (
-                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>UoM Type *</Label>
-                <Select value={form.uomTypeId} onValueChange={(v) => setForm({ ...form, uomTypeId: v || "" })}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.5rem" }}>UoM Type *</label>
+                  <select
+                    className="login-input"
+                    value={form.uomTypeId}
+                    onChange={(e) => setForm({ ...form, uomTypeId: e.target.value })}
+                    style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.875rem" }}
+                  >
+                    <option value="">Select...</option>
                     {(masterData?.uomTypes || []).map((u: any) => (
-                      <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                      <option key={u.id} value={u.id}>{u.name}</option>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </select>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.5rem" }}>Target Value</label>
+                  <input
+                    type="number"
+                    className="login-input"
+                    value={form.targetValue}
+                    onChange={(e) => setForm({ ...form, targetValue: e.target.value })}
+                    placeholder="e.g. 100"
+                    style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.875rem" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.5rem" }}>Weightage (%) *</label>
+                  <input
+                    type="number"
+                    className="login-input"
+                    value={form.weightage}
+                    onChange={(e) => setForm({ ...form, weightage: e.target.value })}
+                    placeholder="e.g. 20"
+                    style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.875rem" }}
+                  />
+                </div>
+              </div>
+
               <div>
-                <Label>Target Value</Label>
-                <Input type="number" value={form.targetValue} onChange={(e) => setForm({ ...form, targetValue: e.target.value })} placeholder="e.g. 100" />
-              </div>
-              <div>
-                <Label>Weightage (%) *</Label>
-                <Input type="number" value={form.weightage} onChange={(e) => setForm({ ...form, weightage: e.target.value })} placeholder="e.g. 20" />
-              </div>
-            </div>
-            <div>
-              <Label>Assign to Department</Label>
-              <Select value={form.departmentId} onValueChange={(v) => setForm({ ...form, departmentId: v || "" })}>
-                <SelectTrigger><SelectValue placeholder="All employees in dept..." /></SelectTrigger>
-                <SelectContent>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(237,232,228,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.5rem" }}>Assign to Department</label>
+                <select
+                  className="login-input"
+                  value={form.departmentId}
+                  onChange={(e) => setForm({ ...form, departmentId: e.target.value })}
+                  style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.875rem" }}
+                >
+                  <option value="">All employees in dept...</option>
                   {(masterData?.departments || []).map((d: any) => (
-                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                    <option key={d.id} value={d.id}>{d.name}</option>
                   ))}
-                </SelectContent>
-              </Select>
+                </select>
+              </div>
+
+              {createGoal.isError && (
+                <div style={{ padding: "0.75rem", borderRadius: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#ef4444", fontSize: "0.8125rem", fontWeight: 500 }}>
+                  {(createGoal.error as any)?.message}
+                </div>
+              )}
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button
-                onClick={() => createGoal.mutate({ ...form, weightage: Number(form.weightage), targetValue: form.targetValue ? Number(form.targetValue) : null })}
-                disabled={createGoal.isPending}
+
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end", marginTop: "0.5rem" }}>
+              <button
+                onClick={() => setOpen(false)}
+                style={{ padding: "0.625rem 1.25rem", borderRadius: "0.625rem", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(237,232,228,0.7)", fontSize: "0.875rem", fontWeight: 600, cursor: "pointer" }}
               >
-                {createGoal.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Cancel
+              </button>
+              <button
+                disabled={!form.title || !form.thrustAreaId || !form.uomTypeId || !form.weightage || createGoal.isPending}
+                onClick={() => createGoal.mutate({ ...form, weightage: Number(form.weightage), targetValue: form.targetValue ? Number(form.targetValue) : null })}
+                style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.625rem 1.25rem", borderRadius: "0.625rem", background: "linear-gradient(135deg, #30b0d0, #5cc8e0)", border: "none", color: "#000", fontSize: "0.875rem", fontWeight: 700, cursor: (!form.title || !form.thrustAreaId || !form.uomTypeId || !form.weightage) ? "not-allowed" : "pointer", opacity: (!form.title || !form.thrustAreaId || !form.uomTypeId || !form.weightage) ? 0.5 : 1 }}
+              >
+                {createGoal.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Push to Employees
-              </Button>
+              </button>
             </div>
-            {createGoal.isError && (
-              <p className="text-sm text-red-500">{(createGoal.error as any)?.message}</p>
-            )}
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </AppLayout>
   );
 }

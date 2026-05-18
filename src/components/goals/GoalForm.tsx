@@ -141,22 +141,28 @@ export function GoalForm({
   const handleFormSubmit = (data: FormData) => {
     setError("");
 
+    // Must have a UoM selected before we can validate the target
+    if (!selectedUom) {
+      setError("Please select a UoM type");
+      return;
+    }
+
     // Validate weightage against remaining
     const currentWeightage = editingGoal ? Number(editingGoal.weightage) : 0;
-    if (data.weightage > (remainingWeightage + currentWeightage)) {
+    if (data.weightage > remainingWeightage + currentWeightage) {
       setError(`Weightage cannot exceed remaining allowed ${(remainingWeightage + currentWeightage).toFixed(1)}%`);
       return;
     }
 
-    // Validate target based on UoM
-    if (selectedUom?.code === "timeline") {
+    // Validate target based on UoM type
+    if (selectedUom.code === "timeline") {
       if (!data.targetDate) {
         setError("Target date is required for Timeline UoM");
         return;
       }
     } else {
       if (!data.targetValue || parseFloat(data.targetValue) <= 0) {
-        setError("Valid target value is required");
+        setError("A valid target value is required for this UoM type");
         return;
       }
     }
@@ -221,7 +227,7 @@ export function GoalForm({
               </Label>
               <Select
                 value={watch("thrustAreaId")}
-                onValueChange={(v: string | null) => setValue("thrustAreaId", v || "")}
+                onValueChange={(v: string | null) => setValue("thrustAreaId", v ?? "")}
               >
                 <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100">
                   <SelectValue placeholder="Select..." />
@@ -245,7 +251,7 @@ export function GoalForm({
               </Label>
               <Select
                 value={watch("uomTypeId")}
-                onValueChange={(v: string | null) => setValue("uomTypeId", v || "")}
+                onValueChange={(v: string | null) => setValue("uomTypeId", v ?? "")}
               >
                 <SelectTrigger className="bg-skin-950 border-skin-700 text-skin-100">
                   <SelectValue placeholder="Select..." />

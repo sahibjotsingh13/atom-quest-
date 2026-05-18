@@ -1,7 +1,22 @@
-// src/app/api/admin/cycles/route.ts
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const cycleSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  fiscalYear: z.string().min(4, "Fiscal year is required"),
+  goalSettingStart: z.coerce.date(),
+  goalSettingEnd: z.coerce.date(),
+  q1Start: z.coerce.date(),
+  q1End: z.coerce.date(),
+  q2Start: z.coerce.date(),
+  q2End: z.coerce.date(),
+  q3Start: z.coerce.date(),
+  q3End: z.coerce.date(),
+  q4Start: z.coerce.date(),
+  q4End: z.coerce.date(),
+});
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -36,6 +51,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
+    const validated = cycleSchema.parse(body);
     const {
       name,
       fiscalYear,
@@ -49,15 +65,15 @@ export async function POST(req: Request) {
       q3End,
       q4Start,
       q4End,
-    } = body;
+    } = validated;
 
     // Validate dates
     const periods = [
-      { name: "Goal Setting", start: new Date(goalSettingStart), end: new Date(goalSettingEnd) },
-      { name: "Q1", start: new Date(q1Start), end: new Date(q1End) },
-      { name: "Q2", start: new Date(q2Start), end: new Date(q2End) },
-      { name: "Q3", start: new Date(q3Start), end: new Date(q3End) },
-      { name: "Q4", start: new Date(q4Start), end: new Date(q4End) },
+      { name: "Goal Setting", start: goalSettingStart, end: goalSettingEnd },
+      { name: "Q1", start: q1Start, end: q1End },
+      { name: "Q2", start: q2Start, end: q2End },
+      { name: "Q3", start: q3Start, end: q3End },
+      { name: "Q4", start: q4Start, end: q4End },
     ];
 
     for (const period of periods) {
@@ -114,6 +130,12 @@ export async function POST(req: Request) {
 
     return Response.json(cycle, { status: 201 });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ error: "Validation failed", details: error.issues }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
     console.error("Error creating cycle:", error);
     return new Response("Internal server error", { status: 500 });
   }

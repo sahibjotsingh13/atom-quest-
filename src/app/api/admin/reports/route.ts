@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import * as XLSX from "xlsx";
+import { z } from "zod";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -13,15 +14,23 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const cycleId = searchParams.get("cycleId");
-    const format = searchParams.get("format") || "xlsx"; // xlsx or csv
+    const rawCycleId = searchParams.get("cycleId");
+    const rawFormat = searchParams.get("format") || "xlsx";
 
-    if (!cycleId) {
+    const querySchema = z.object({
+      cycleId: z.string().uuid("Cycle ID must be a valid UUID"),
+      format: z.enum(["csv", "xlsx"]).default("xlsx"),
+    });
+
+    const validationResult = querySchema.safeParse({ cycleId: rawCycleId, format: rawFormat });
+    if (!validationResult.success) {
       return new Response(
-        JSON.stringify({ error: "Cycle ID is required" }),
+        JSON.stringify({ error: "Validation failed", details: validationResult.error.issues }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
+
+    const { cycleId, format } = validationResult.data;
 
     // Using raw SQL for efficient reporting across large datasets
     // Note: Database uses PascalCase for tables and camelCase for columns

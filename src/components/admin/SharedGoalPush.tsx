@@ -47,7 +47,7 @@ export function SharedGoalPush() {
   const { data: uomTypes = [] } = useQuery({
     queryKey: ["uomTypes"],
     queryFn: async () => {
-      const res = await fetch("/api/master/uom-types");
+      const res = await fetch("/api/uom-types");
       return res.json();
     },
   });
@@ -55,7 +55,7 @@ export function SharedGoalPush() {
   const { data: thrustAreas = [] } = useQuery({
     queryKey: ["thrustAreas"],
     queryFn: async () => {
-      const res = await fetch("/api/master/thrust-areas");
+      const res = await fetch("/api/thrust-areas");
       return res.json();
     },
   });
@@ -63,7 +63,7 @@ export function SharedGoalPush() {
   const { data: departments = [] } = useQuery({
     queryKey: ["departments"],
     queryFn: async () => {
-      const res = await fetch("/api/master/departments");
+      const res = await fetch("/api/departments");
       return res.json();
     },
   });
@@ -71,7 +71,7 @@ export function SharedGoalPush() {
   const { data: employees = [] } = useQuery({
     queryKey: ["employees"],
     queryFn: async () => {
-      const res = await fetch("/api/master/employees");
+      const res = await fetch("/api/users?role=employee");
       return res.json();
     },
   });
