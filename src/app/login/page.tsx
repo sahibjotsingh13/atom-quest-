@@ -258,63 +258,46 @@ export default function LoginPage() {
 
           {/* Demo Accounts */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-            {demoAccounts.map((account) => (
-              <button
-                key={account.email}
-                onClick={() => setEmail(account.email)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "0.875rem 1rem",
-                  borderRadius: "0.875rem",
-                  border: `1px solid ${email === account.email ? "rgba(48, 176, 208, 0.3)" : "rgba(255,255,255,0.08)"}`,
-                  background: email === account.email
-                    ? "rgba(48, 176, 208, 0.08)"
-                    : "rgba(255,255,255,0.02)",
-                  color: "#ede8e4",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  textAlign: "left",
-                  width: "100%",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
-                  e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = email === account.email
-                    ? "rgba(48, 176, 208, 0.3)"
-                    : "rgba(255,255,255,0.08)";
-                  e.currentTarget.style.background = email === account.email
-                    ? "rgba(48, 176, 208, 0.08)"
-                    : "rgba(255,255,255,0.02)";
-                }}
-              >
-                <div>
-                  <p
-                    className="font-sans-body"
-                    style={{ fontSize: "0.8125rem", fontWeight: 600 }}
-                  >
-                    {account.email}
-                  </p>
-                </div>
-                <span
-                  className="font-sans-body"
+            {demoAccounts.map((account) => {
+              const isSelected = email === account.email;
+              return (
+                <button
+                  key={account.email}
+                  onClick={() => setEmail(account.email)}
+                  className={`group relative flex items-center justify-between w-full p-[0.875rem] px-4 rounded-[0.875rem] text-left transition-all duration-300 ease-out outline-none select-none hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:shadow-sm ${
+                    isSelected
+                      ? "border border-[#30b0d0]/30 bg-[#30b0d0]/10 text-[#ede8e4]"
+                      : "border border-white/10 bg-white/5 text-[#ede8e4] hover:bg-white/10 hover:border-white/20"
+                  }`}
                   style={{
-                    fontSize: "0.6875rem",
-                    padding: "0.25rem 0.75rem",
-                    borderRadius: "9999px",
-                    fontWeight: 600,
-                    background: `linear-gradient(135deg, ${account.color.split(" ")[0].replace("from-[", "").replace("]", "")}, ${account.color.split(" ")[1].replace("to-[", "").replace("]", "")})`,
-                    color: "#ffffff",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                    boxShadow: isSelected ? "0 4px 12px rgba(48, 176, 208, 0.15)" : undefined,
                   }}
                 >
-                  {account.role}
-                </span>
-              </button>
-            ))}
+                  <div>
+                    <p
+                      className="font-sans-body"
+                      style={{ fontSize: "0.8125rem", fontWeight: 600 }}
+                    >
+                      {account.email}
+                    </p>
+                  </div>
+                  <span
+                    className="font-sans-body"
+                    style={{
+                      fontSize: "0.6875rem",
+                      padding: "0.25rem 0.75rem",
+                      borderRadius: "9999px",
+                      fontWeight: 600,
+                      background: `linear-gradient(135deg, ${account.color.split(" ")[0].replace("from-[", "").replace("]", "")}, ${account.color.split(" ")[1].replace("to-[", "").replace("]", "")})`,
+                      color: "#ffffff",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                    }}
+                  >
+                    {account.role}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 

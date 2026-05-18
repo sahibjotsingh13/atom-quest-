@@ -499,3 +499,24 @@
   transform: translateY(0);
   box-shadow: 0 4px 10px rgba(230, 74, 25, 0.2);
 }
+
+/* Universal Button Hover Enhancements */
+button {
+  transition: all 0.2s ease-out;
+}
+
+:where(button:not(:disabled):not(.switch-3d):not(.nav-item):not([role="tab"]):not(.sidebar-toggle-btn)):hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  filter: brightness(0.96);
+}
+
+.dark :where(button:not(:disabled):not(.switch-3d):not(.nav-item):not([role="tab"]):not(.sidebar-toggle-btn)):hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  filter: brightness(1.15);
+}
+
+:where(button:not(:disabled):not(.switch-3d):not(.nav-item):not([role="tab"]):not(.sidebar-toggle-btn)):active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
