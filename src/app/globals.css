@@ -54,6 +54,17 @@
     /* Reduced Transitions */
     --transition-fast: 0.1s ease;
     --transition-base: 0.2s ease;
+
+    /* Direct-hex semantic tokens for inline-style usage */
+    --card-bg: #ffffff;
+    --foreground-hex: #0f172a;
+    --muted-foreground-hex: #64748b;
+    --border-hex: #e2e8f0;
+    --primary-hex: #3b82f6;
+    --primary-light: #eff6ff;
+    --hover-bg: #f1f5f9;
+    --destructive-hex: #ef4444;
+    --destructive-light: #fef2f2;
   }
 
   .dark {
@@ -76,6 +87,17 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    /* Direct-hex semantic tokens (dark overrides) */
+    --card-bg: #0f172a;
+    --foreground-hex: #f8fafc;
+    --muted-foreground-hex: #94a3b8;
+    --border-hex: #334155;
+    --primary-hex: #60a5fa;
+    --primary-light: rgba(96, 165, 250, 0.08);
+    --hover-bg: #1e293b;
+    --destructive-hex: #f87171;
+    --destructive-light: rgba(248, 113, 113, 0.08);
   }
 
   html {
