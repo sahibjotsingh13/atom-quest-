@@ -8,6 +8,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { GoalForm } from "@/components/goals/GoalForm";
 import { GoalCard } from "@/components/goals/GoalCard";
 import { WeightageChart } from "@/components/goals/WeightageChart";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Plus,
   Target,
@@ -22,6 +23,9 @@ import {
   Sparkles,
   TrendingUp,
   ShieldCheck,
+  Award,
+  Layers,
+  Compass,
 } from "lucide-react";
 import { QuarterTimeline } from "@/components/checkin/QuarterTimeline";
 import { CheckInForm } from "@/components/checkin/CheckInForm";
@@ -37,6 +41,7 @@ export function EmployeeDashboard() {
   const [currentWindow, setCurrentWindow] = useState<any>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [deleteGoalId, setDeleteGoalId] = useState<string | null>(null);
 
   // Fetch goal sheet
   const { data: sheet, isLoading, isError, error: queryError } = useQuery({
@@ -188,7 +193,6 @@ export function EmployeeDashboard() {
     },
   });
 
-  // Current quarter logic
   useEffect(() => {
     if (sheet?.cycle) {
       setCurrentWindow(getQuarterStatus(sheet.cycle));
@@ -217,18 +221,17 @@ export function EmployeeDashboard() {
   };
 
   const handleDeleteGoal = (id: string) => {
-    if (!confirm("Are you sure you want to delete this goal?")) return;
-    deleteGoal.mutate(id);
+    setDeleteGoalId(id);
   };
 
   const getStatusBadge = () => {
     const baseClasses = "inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-sm";
     switch (sheet?.status) {
-      case "draft": return <span className={`${baseClasses} bg-[rgba(255,255,255,0.06)] text-[#ede8e4] border border-[rgba(255,255,255,0.1)]`}>Draft Mode</span>;
-      case "submitted": return <span className={`${baseClasses} bg-[rgba(48,176,208,0.1)] text-[#5cc8e0] border border-[rgba(48,176,208,0.2)] shimmer`}>Pending Approval</span>;
-      case "locked": return <span className={`${baseClasses} bg-[rgba(34,197,94,0.1)] text-[#4ade80] border border-[rgba(34,197,94,0.2)]`}><Lock className="w-3.5 h-3.5" /> Approved &amp; Locked</span>;
-      case "rejected": return <span className={`${baseClasses} bg-[rgba(239,68,68,0.1)] text-[#f87171] border border-[rgba(239,68,68,0.2)] animate-pulse`}><RotateCcw className="w-3.5 h-3.5" /> Rejected - Action Required</span>;
-      default: return <span className={`${baseClasses} bg-[rgba(255,255,255,0.06)] text-[#ede8e4] border border-[rgba(255,255,255,0.1)]`}>Draft Mode</span>;
+      case "draft": return <span className={`${baseClasses} bg-[rgba(255,112,67,0.1)] text-[#ff7043] border border-[rgba(255,112,67,0.2)]`}>Draft Sheet</span>;
+      case "submitted": return <span className={`${baseClasses} bg-[rgba(92,200,224,0.1)] text-[#5cc8e0] border border-[rgba(92,200,224,0.2)]`}>Pending Approval</span>;
+      case "locked": return <span className={`${baseClasses} bg-[rgba(34,197,94,0.1)] text-[#4ade80] border border-[rgba(34,197,94,0.2)]`}><Lock className="w-3.5 h-3.5" /> Locked &amp; Active</span>;
+      case "rejected": return <span className={`${baseClasses} bg-[rgba(239,68,68,0.1)] text-[#f87171] border border-[rgba(239,68,68,0.2)]`}><RotateCcw className="w-3.5 h-3.5" /> Returned - Action Required</span>;
+      default: return <span className={`${baseClasses} bg-[rgba(255,255,255,0.06)] text-[#ede8e4] border border-[rgba(255,255,255,0.1)]`}>Draft Sheet</span>;
     }
   };
 
@@ -252,10 +255,10 @@ export function EmployeeDashboard() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               <h3 className="font-serif-display" style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff" }}>
-                Goal Sheet Unavailable
+                Goal Sheet Offline
               </h3>
               <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)", lineHeight: 1.6 }}>
-                {queryError?.message || "There is no active goal setting cycle configured at this moment. Please check back later or contact your system administrator."}
+                {queryError?.message || "There is no active goal setting cycle configured. Please contact your system administrator."}
               </p>
             </div>
           </div>
@@ -266,385 +269,386 @@ export function EmployeeDashboard() {
 
   return (
     <AppLayout>
-      <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "72rem", margin: "0 auto", paddingBottom: "4rem" }}>
-        {/* Top Hero Banner */}
-        <div className="hero-banner">
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: "24rem",
-              height: "24rem",
-              background: "radial-gradient(circle, rgba(255,112,67,0.06) 0%, transparent 70%)",
-              borderRadius: "50%",
-              pointerEvents: "none",
-              marginRight: "-5rem",
-              marginTop: "-5rem",
-            }}
-          />
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", position: "relative", zIndex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-              <h1
-                className="font-serif-display"
-                style={{
-                  fontSize: "1.875rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.02em",
-                  color: "#ffffff",
-                  textShadow: "0 2px 24px rgba(0,0,0,0.45)",
-                }}
-              >
-                My Goal Sheet
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "76rem", margin: "0 auto", paddingBottom: "4rem" }}>
+        
+        {/* Sleek Top Workspace Bar */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "1.25rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <Target className="w-4 h-4 text-[#ff7043]" />
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(237,232,228,0.5)" }}>
+                ROADMAP CANVAS
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <h1 className="font-serif-display" style={{ fontSize: "1.75rem", fontWeight: 700, color: "#ffffff" }}>
+                My Strategic Goals
               </h1>
               {getStatusBadge()}
             </div>
-            <p
-              className="font-sans-body"
-              style={{
-                fontSize: "0.875rem",
-                color: "rgba(237, 232, 228, 0.6)",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <CalendarDays className="w-4 h-4 text-[#ff7043]" />
-              <span>{sheet?.cycle?.name || "Current Performance Cycle"}</span>
-              <span style={{ color: "rgba(237,232,228,0.2)" }}>•</span>
-              <span style={{ color: "rgba(237,232,228,0.4)" }}>Manage, align, and track your strategic objectives</span>
-            </p>
-
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
-              {canEdit && (
-                <button
-                  onClick={() => { setEditingGoal(null); setShowForm(true); }}
-                  className="login-btn login-btn-primary"
-                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem" }}
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add New Goal</span>
-                </button>
-              )}
-              {canEdit && goals.length > 0 && (
-                <button
-                  onClick={() => submitSheet.mutate()}
-                  disabled={submitSheet.isPending || !canSubmit}
-                  className="login-btn"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    fontSize: "0.8125rem",
-                    opacity: canSubmit ? 1 : 0.5,
-                    cursor: canSubmit ? "pointer" : "not-allowed",
-                    background: canSubmit
-                      ? "linear-gradient(135deg, #22c55e, #16a34a)"
-                      : "rgba(255,255,255,0.04)",
-                    color: canSubmit ? "#ffffff" : "rgba(237,232,228,0.4)",
-                    border: canSubmit ? "none" : "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  {submitSheet.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  <span>Submit for Approval</span>
-                </button>
-              )}
-              {isLocked && (
-                <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#4ade80", fontWeight: 600, fontSize: "0.8125rem" }}>
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Sheet Approved &amp; Locked</span>
-                </div>
-              )}
-              {isSubmitted && (
-                <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 1rem", color: "#fbbf24", fontWeight: 600, fontSize: "0.8125rem" }}>
-                  <Clock className="w-4 h-4" />
-                  <span>Awaiting Manager Review</span>
-                </div>
-              )}
-            </div>
           </div>
-        </div>
 
-        {/* Alerts & Notifications */}
-        {error && (
-          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.05)" }}>
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <span className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 500 }}>{error}</span>
-          </div>
-        )}
-        {success && (
-          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#4ade80", border: "1px solid rgba(34,197,94,0.2)", background: "rgba(34,197,94,0.05)" }}>
-            <CheckCircle className="w-5 h-5 flex-shrink-0 text-[#4ade80]" />
-            <span className="font-sans-body" style={{ fontSize: "0.875rem", fontWeight: 500 }}>{success}</span>
-          </div>
-        )}
-
-        {/* Rejection Reason Banner */}
-        {sheet?.status === "rejected" && sheet?.rejectionReason && (
-          <div className="alert-glass" style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "1.25rem 1.5rem", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.08)" }}>
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <div className="font-sans-body">
-              <strong style={{ display: "block", fontSize: "1rem", fontWeight: 700, marginBottom: "0.25rem" }}>Returned for Rework by Manager:</strong>
-              <span style={{ fontSize: "0.875rem", lineHeight: 1.6 }}>{sheet.rejectionReason}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Submit Hint Banner */}
-        {canSubmit && (
-          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.25rem 1.5rem", color: "#ede8e4", border: "1px solid rgba(255,112,67,0.2)", background: "rgba(255,112,67,0.05)" }}>
-            <Sparkles className="w-6 h-6 text-[#ff7043] animate-bounce flex-shrink-0" />
-            <div className="font-sans-body">
-              <strong style={{ display: "block", fontSize: "1rem", fontWeight: 700, marginBottom: "0.125rem", color: "#ffab91" }}>All Requirements Met!</strong>
-              <span style={{ fontSize: "0.875rem", lineHeight: 1.6 }}>
-                Your goal sheet is fully balanced and configured. Click <strong style={{ color: "#ffffff" }}>&quot;Submit for Approval&quot;</strong> above to send it to your manager.
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Weightage Summary Dashboard Card */}
-        <div className="glass-card" style={{ padding: "2rem", position: "relative", overflow: "hidden" }}>
-          <h2
-            className="font-serif-display"
-            style={{
-              fontSize: "1.125rem",
-              fontWeight: 600,
-              color: "#ffffff",
-              marginBottom: "1.5rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              textShadow: "0 2px 24px rgba(0,0,0,0.45)",
-            }}
-          >
-            <TrendingUp className="w-5 h-5 text-[#ff7043]" />
-            <span>Weightage &amp; Alignment Distribution</span>
-          </h2>
-
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2rem" }}>
-            <WeightageChart goals={goals} />
-
-            <div style={{ flex: 1, width: "100%", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem", fontWeight: 600 }}>
-                  <span style={{ color: Math.abs(totalWeightage - 100) < 0.01 ? "#4ade80" : "#ede8e4" }}>
-                    Allocated Weightage: {totalWeightage.toFixed(1)}%
-                  </span>
-                  <span style={{ color: "rgba(237,232,228,0.4)" }}>
-                    Remaining: {remainingWeightage.toFixed(1)}%
-                  </span>
-                  <span style={{ color: "rgba(237,232,228,0.4)" }}>
-                    Total Goals: {goals.length} / 8
-                  </span>
-                </div>
-
-                {/* Progress Bar */}
-                <div style={{ position: "relative", height: "1rem", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden", padding: "2px" }}>
-                  <div
-                    style={{
-                      height: "100%",
-                      borderRadius: "9999px",
-                      transition: "all 1s ease",
-                      width: `${Math.min(100, totalWeightage)}%`,
-                      background: Math.abs(totalWeightage - 100) < 0.01
-                        ? "linear-gradient(90deg, #22c55e, #16a34a)"
-                        : totalWeightage > 100
-                        ? "linear-gradient(90deg, #ef4444, #dc2626)"
-                        : "linear-gradient(90deg, #ffab91, #d84315)",
-                      boxShadow: Math.abs(totalWeightage - 100) < 0.01
-                        ? "0 0 12px rgba(34,197,94,0.3)"
-                        : totalWeightage > 100
-                        ? "0 0 12px rgba(239,68,68,0.3)"
-                        : "0 0 12px rgba(255,112,67,0.3)",
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Submission Checklist */}
-              {canEdit && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                  <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(237,232,228,0.4)", fontWeight: 700 }}>
-                    Goal Sheet Requirements
-                  </span>
-                  
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-                    {/* Goal Count Requirement */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.8125rem", color: goals.length >= 3 && goals.length <= 8 ? "#4ade80" : "rgba(237,232,228,0.65)" }}>
-                      {goals.length >= 3 && goals.length <= 8 ? (
-                        <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
-                      ) : (
-                        <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0" />
-                      )}
-                      <span style={{ textDecoration: goals.length >= 3 && goals.length <= 8 ? "line-through" : "none", opacity: goals.length >= 3 && goals.length <= 8 ? 0.5 : 1 }}>
-                        Add between 3 and 8 goals (Current: {goals.length})
-                      </span>
-                    </div>
-
-                    {/* Weightage Requirement */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.8125rem", color: Math.abs(totalWeightage - 100) < 0.01 ? "#4ade80" : "rgba(237,232,228,0.65)" }}>
-                      {Math.abs(totalWeightage - 100) < 0.01 ? (
-                        <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
-                      ) : (
-                        <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0" />
-                      )}
-                      <span style={{ textDecoration: Math.abs(totalWeightage - 100) < 0.01 ? "line-through" : "none", opacity: Math.abs(totalWeightage - 100) < 0.01 ? 0.5 : 1 }}>
-                        Allocate exactly 100% total weightage (Current: {totalWeightage.toFixed(1)}%)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Quarterly Check-ins Timeline */}
-        {isLocked && (
-          <div className="glass-card" style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", paddingBottom: "1rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <h2
-                className="font-serif-display"
-                style={{ fontSize: "1.125rem", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.5rem", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}
-              >
-                <CalendarDays className="w-5 h-5 text-[#ff7043]" />
-                <span>Quarterly Performance Check-ins</span>
-              </h2>
-              {currentWindow?.isOpen && (
-                <span className="alert-glass" style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem", padding: "0.375rem 0.875rem", color: "#4ade80", border: "1px solid rgba(34,197,94,0.2)", fontSize: "0.75rem", fontWeight: 700, borderRadius: "9999px", alignSelf: "flex-start" }}>
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{currentWindow.label} Window Open</span>
-                </span>
-              )}
-            </div>
-
-            <QuarterTimeline goals={goals} cycle={sheet?.cycle} />
-
-            {!currentWindow?.isOpen && (
-              <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.15)", background: "rgba(245,158,11,0.05)" }}>
-                <Clock className="w-5 h-5 flex-shrink-0 text-[#fbbf24]" />
-                <span className="font-sans-body" style={{ fontSize: "0.875rem" }}>
-                  No check-in window is currently active. Quarterly check-ins open during scheduled review periods: Q1 (July), Q2 (October), Q3 (January), Q4 (March/April).
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Goals Stack Header & List */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          <div className="glass" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.25rem 2rem", borderRadius: "1rem" }}>
-            <h2
-              className="font-serif-display"
-              style={{ fontSize: "1.25rem", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.75rem", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}
-            >
-              <Target className="w-6 h-6 text-[#ff7043]" />
-              <span>Strategic Objectives ({goals.length})</span>
-            </h2>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             {canEdit && (
               <button
                 onClick={() => { setEditingGoal(null); setShowForm(true); }}
                 className="login-btn login-btn-primary"
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem" }}
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem", fontSize: "0.8125rem" }}
               >
                 <Plus className="w-4 h-4" />
-                <span>Add Goal</span>
+                <span>Create Goal</span>
+              </button>
+            )}
+            {canEdit && goals.length > 0 && (
+              <button
+                onClick={() => submitSheet.mutate()}
+                disabled={submitSheet.isPending || !canSubmit}
+                className="login-btn"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.375rem",
+                  fontSize: "0.8125rem",
+                  opacity: canSubmit ? 1 : 0.5,
+                  cursor: canSubmit ? "pointer" : "not-allowed",
+                  background: canSubmit ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(255,255,255,0.04)",
+                  color: canSubmit ? "#ffffff" : "rgba(237,232,228,0.4)",
+                  border: canSubmit ? "none" : "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                {submitSheet.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                <span>Submit Sheet</span>
               </button>
             )}
           </div>
-
-          {/* Goal Cards Grid / Stack */}
-          <div className="goal-stack" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            {goals.map((goal: any, index: number) => (
-              <GoalCard
-                key={goal.id}
-                goal={goal}
-                index={index}
-                isEditable={canEdit}
-                onEdit={() => { setEditingGoal(goal); setShowForm(true); }}
-                onDelete={() => handleDeleteGoal(goal.id)}
-                onCheckIn={() => {
-                  if (currentWindow?.isOpen) {
-                    setCheckInGoal(goal);
-                    setCheckInQuarter(currentWindow.quarter);
-                  } else {
-                    setError(`Check-in window is currently closed. ${currentWindow ? `Next window: ${currentWindow.label}` : "No active cycle"}`);
-                  }
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Empty State */}
-          {goals.length === 0 && (
-            <div className="empty-state" style={{ padding: "4rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem", position: "relative", overflow: "hidden" }}>
-              <div
-                style={{
-                  width: "6rem",
-                  height: "6rem",
-                  borderRadius: "1.25rem",
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-                }}
-              >
-                <Target className="w-10 h-10 text-[#ff7043] animate-pulse" />
-              </div>
-
-              <div style={{ maxWidth: "28rem" }}>
-                <h3 className="font-serif-display" style={{ fontSize: "1.5rem", fontWeight: 600, color: "#ffffff", marginBottom: "0.5rem", textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}>
-                  No Strategic Goals Configured
-                </h3>
-                <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.5)", lineHeight: 1.7 }}>
-                  Begin structuring your performance roadmap by adding your first objective. You need between 3 and 8 goals totaling exactly 100% weightage.
-                </p>
-              </div>
-
-              {canEdit && (
-                <button
-                  onClick={() => { setEditingGoal(null); setShowForm(true); }}
-                  className="login-btn login-btn-primary"
-                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9375rem", marginTop: "0.5rem" }}
-                >
-                  <Plus className="w-5 h-5" />
-                  <span>Create Your First Goal</span>
-                </button>
-              )}
-            </div>
-          )}
         </div>
 
-        {/* Goal Form Modal */}
-        <GoalForm
-          open={showForm}
-          onClose={() => { setShowForm(false); setEditingGoal(null); }}
-          onSubmit={editingGoal ? handleEditGoal : handleAddGoal}
-          uomTypes={uomTypes}
-          thrustAreas={thrustAreas}
-          remainingWeightage={editingGoal ? remainingWeightage + Number(editingGoal.weightage) : remainingWeightage}
-          editingGoal={editingGoal}
-        />
-
-        {/* Check-in Modal */}
-        {checkInGoal && currentWindow?.isOpen && (
-          <CheckInForm
-            open={!!checkInGoal}
-            onClose={() => {
-              setCheckInGoal(null);
-              setCheckInQuarter("");
-            }}
-            onSubmit={(data) => checkIn.mutate(data)}
-            goal={checkInGoal}
-            quarter={checkInQuarter}
-            existingCheckIn={checkInGoal.checkIns?.find((c: any) => c.quarter === checkInQuarter)}
-          />
+        {/* Status Alerts block */}
+        {error && (
+          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)" }}>
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 600 }}>{error}</span>
+          </div>
         )}
+        {success && (
+          <div className="alert-glass" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1.25rem", color: "#4ade80", border: "1px solid rgba(34,197,94,0.2)", background: "rgba(34,197,94,0.04)" }}>
+            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+            <span className="font-sans-body" style={{ fontSize: "0.8125rem", fontWeight: 600 }}>{success}</span>
+          </div>
+        )}
+
+        {/* Modern Widescreen Canvas Layout */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}>
+          
+          {/* TOP HORIZONTAL SUMMARY DASHBOARD GRID */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(22rem, 1fr))", gap: "1.5rem" }}>
+            
+            {/* Health & Weightage Visual Card */}
+            <div className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <TrendingUp className="w-4.5 h-4.5 text-[#ff7043]" />
+                <h3 style={{ fontSize: "0.875rem", fontWeight: 750, color: "#ffffff" }}>
+                  Weightage Balance
+                </h3>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flex: 1 }}>
+                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: "0.5rem", padding: "0.5rem", display: "flex", justifyContent: "center" }}>
+                  <WeightageChart goals={goals} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem" }}>
+                    <span style={{ color: "rgba(237,232,228,0.4)" }}>Allocated:</span>
+                    <span style={{ fontWeight: 700, color: Math.abs(totalWeightage - 100) < 0.01 ? "#4ade80" : "#ffffff" }}>
+                      {totalWeightage}%
+                    </span>
+                  </div>
+                  <div style={{ height: "6px", width: "100%", background: "rgba(255,255,255,0.04)", borderRadius: "3px", overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%",
+                      width: `${Math.min(100, totalWeightage)}%`,
+                      background: Math.abs(totalWeightage - 100) < 0.01
+                        ? "#4ade80"
+                        : totalWeightage > 100
+                        ? "#f87171"
+                        : "#ff7043",
+                      transition: "all 0.5s ease"
+                    }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Validation Health Requirements Card */}
+            {canEdit ? (
+              <div className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <h3 style={{ fontSize: "0.8125rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(237,232,228,0.4)", display: "flex", alignItems: "center", gap: "0.375rem" }}>
+                  <Layers className="w-4 h-4 text-[#ff7043]" />
+                  <span>Validation Health</span>
+                </h3>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", flex: 1, justifyContent: "center" }}>
+                  {/* Goal Count Rule */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.75rem", color: goals.length >= 3 && goals.length <= 8 ? "#4ade80" : "rgba(237,232,228,0.6)" }}>
+                    {goals.length >= 3 && goals.length <= 8 ? (
+                      <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0" />
+                    )}
+                    <span style={{ opacity: goals.length >= 3 && goals.length <= 8 ? 0.6 : 1 }}>
+                      Roadmap contains 3-8 goals (Current: {goals.length})
+                    </span>
+                  </div>
+
+                  {/* Weightage sum Rule */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.75rem", color: Math.abs(totalWeightage - 100) < 0.01 ? "#4ade80" : "rgba(237,232,228,0.6)" }}>
+                    {Math.abs(totalWeightage - 100) < 0.01 ? (
+                      <CheckCircle className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-[#fbbf24] flex-shrink-0" />
+                    )}
+                    <span style={{ opacity: Math.abs(totalWeightage - 100) < 0.01 ? 0.6 : 1 }}>
+                      Total weight matches 100% exactly (Current: {totalWeightage}%)
+                    </span>
+                  </div>
+                </div>
+
+                {canSubmit && (
+                  <div style={{ background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)", padding: "0.5rem 0.75rem", borderRadius: "0.5rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                    <Sparkles className="w-4 h-4 text-[#4ade80] flex-shrink-0" />
+                    <span style={{ fontSize: "0.725rem", color: "rgba(237,232,228,0.8)", fontWeight: 500 }}>
+                      Sheet satisfies all operational requirements. Ready to submit!
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <h3 style={{ fontSize: "0.8125rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(237,232,228,0.4)", display: "flex", alignItems: "center", gap: "0.375rem" }}>
+                  <ShieldCheck className="w-4 h-4 text-[#ff7043]" />
+                  <span>Validation Status</span>
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1, justifyContent: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#4ade80", fontSize: "0.75rem" }}>
+                    <CheckCircle className="w-4.5 h-4.5 text-[#4ade80]" />
+                    <span style={{ fontWeight: 600 }}>Validation Succeeded</span>
+                  </div>
+                  <p style={{ fontSize: "0.725rem", color: "rgba(237,232,228,0.5)", lineHeight: 1.45 }}>
+                    Your goal sheet has been locked and is under active cycle review. Individual check-ins can be completed during review windows.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Active Performance Period Card */}
+            <div className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <span style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", color: "rgba(237,232,228,0.4)", letterSpacing: "0.05em" }}>
+                Active Performance Period
+              </span>
+              <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flex: 1 }}>
+                <CalendarDays className="w-6 h-6 text-[#ff7043]" />
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: "0.9375rem", fontWeight: 750, color: "#ffffff" }}>
+                    {sheet?.cycle?.name || "2026 Cycle"}
+                  </span>
+                  <span style={{ fontSize: "0.725rem", color: "rgba(237,232,228,0.45)", marginTop: "0.125rem" }}>
+                    {currentWindow?.isOpen ? `${currentWindow.label} window is open` : "All review windows closed"}
+                  </span>
+                </div>
+              </div>
+              {currentWindow?.isOpen && (
+                <div style={{ background: "rgba(92,200,224,0.06)", border: "1px solid rgba(92,200,224,0.15)", padding: "0.5rem 0.75rem", borderRadius: "0.5rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                  <span style={{ width: "0.375rem", height: "0.375rem", borderRadius: "50%", background: "#5cc8e0", animation: "pulse 2s infinite" }}></span>
+                  <span style={{ fontSize: "0.725rem", color: "#5cc8e0", fontWeight: 600 }}>Active Review Window</span>
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          {/* BOTTOM STRATEGIC WORKSPACE AREA */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+            
+            {/* Manager Remarks Banner in workspace */}
+            {sheet?.status === "rejected" && sheet?.rejectionReason && (
+              <div className="alert-glass" style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "1.25rem 1.5rem", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.03)" }}>
+                <AlertCircle className="w-4.5 h-4.5 flex-shrink-0 mt-0.5" />
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.125rem" }}>
+                  <span style={{ fontSize: "0.875rem", fontWeight: 750, color: "#ffffff" }}>Manager Comments:</span>
+                  <p style={{ fontSize: "0.8125rem", color: "rgba(237,232,228,0.8)", lineHeight: 1.4 }}>{sheet.rejectionReason}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Check-ins timeline workspace block */}
+            {isLocked && (
+              <div className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <h3 style={{ fontSize: "0.875rem", fontWeight: 750, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <Clock className="w-4.5 h-4.5 text-[#ff7043]" />
+                    <span>Quarterly Review Schedule</span>
+                  </h3>
+                  {currentWindow?.isOpen && (
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4ade80" }}>
+                      ● {currentWindow.label} Review Open
+                    </span>
+                  )}
+                </div>
+
+                <QuarterTimeline goals={goals} cycle={sheet?.cycle} />
+              </div>
+            )}
+
+            {/* Goals Canvas Grid block */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)", padding: "1rem 1.5rem", borderRadius: "0.75rem" }}>
+                <h3 style={{ fontSize: "0.9375rem", fontWeight: 750, color: "#ffffff", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <Layers className="w-5 h-5 text-[#ff7043]" />
+                  <span>Goal Cards Feed ({goals.length})</span>
+                </h3>
+                {canEdit && (
+                  <button
+                    onClick={() => { setEditingGoal(null); setShowForm(true); }}
+                    className="login-btn login-btn-primary"
+                    style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", fontSize: "0.75rem", padding: "0.5rem 1rem" }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>New Objective</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Grid display of cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                {goals.map((goal: any, index: number) => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    index={index}
+                    isEditable={canEdit}
+                    onEdit={() => { setEditingGoal(goal); setShowForm(true); }}
+                    onDelete={() => handleDeleteGoal(goal.id)}
+                    onCheckIn={() => {
+                      if (currentWindow?.isOpen) {
+                        setCheckInGoal(goal);
+                        setCheckInQuarter(currentWindow.quarter);
+                      } else {
+                        setError(`Check-in window is currently closed. ${currentWindow ? `Next window: ${currentWindow.label}` : "No active cycle"}`);
+                      }
+                    }}
+                  />
+                ))}
+
+                {/* Workspace Empty State */}
+                {goals.length === 0 && (
+                  <div style={{ padding: "4rem 2rem", textAlign: "center", border: "1px dashed rgba(255,255,255,0.06)", borderRadius: "1rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+                    <Target className="w-10 h-10 text-white/20 animate-pulse" />
+                    <div>
+                      <h4 style={{ fontSize: "1rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.25rem" }}>
+                        Canvas Workspace Empty
+                      </h4>
+                      <p style={{ fontSize: "0.75rem", color: "rgba(237,232,228,0.45)", maxWidth: "26rem", margin: "0 auto", lineHeight: 1.5 }}>
+                        No strategic goals are configured. Add a goal card using the button above to begin layout planning for this cycle.
+                      </p>
+                    </div>
+                    {canEdit && (
+                      <button
+                        onClick={() => { setEditingGoal(null); setShowForm(true); }}
+                        className="login-btn login-btn-primary"
+                        style={{ fontSize: "0.8125rem", display: "inline-flex", alignItems: "center", gap: "0.25rem", marginTop: "0.5rem" }}
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Configure First Goal</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
+
+      {/* Goal Entry Dialog Form */}
+      <GoalForm
+        open={showForm}
+        onClose={() => { setShowForm(false); setEditingGoal(null); }}
+        onSubmit={editingGoal ? handleEditGoal : handleAddGoal}
+        uomTypes={uomTypes}
+        thrustAreas={thrustAreas}
+        remainingWeightage={editingGoal ? remainingWeightage + Number(editingGoal.weightage) : remainingWeightage}
+        editingGoal={editingGoal}
+      />
+
+      {/* Dynamic Review Check-in Form Modal */}
+      {checkInGoal && currentWindow?.isOpen && (
+        <CheckInForm
+          open={!!checkInGoal}
+          onClose={() => {
+            setCheckInGoal(null);
+            setCheckInQuarter("");
+          }}
+          onSubmit={(data) => checkIn.mutate(data)}
+          goal={checkInGoal}
+          quarter={checkInQuarter}
+          existingCheckIn={checkInGoal.checkIns?.find((c: any) => c.quarter === checkInQuarter)}
+        />
+      )}
+
+      {/* Custom Premium Delete Confirmation Dialog */}
+      <Dialog open={!!deleteGoalId} onOpenChange={(open) => { if (!open) setDeleteGoalId(null); }}>
+        <DialogContent className="glass-card" style={{ maxWidth: "26rem", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(20,20,20,0.85)", backdropFilter: "blur(20px)" }}>
+          <DialogHeader>
+            <DialogTitle className="font-serif-display" style={{ fontSize: "1.25rem", color: "#ffffff", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <AlertCircle className="w-5 h-5 text-[#f87171]" />
+              Confirm Delete
+            </DialogTitle>
+          </DialogHeader>
+          <div style={{ padding: "1rem 0", display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <p className="font-sans-body" style={{ fontSize: "0.875rem", color: "rgba(237,232,228,0.7)", lineHeight: 1.5 }}>
+              Are you sure you want to delete this strategic goal? This action will permanently remove it from your roadmap and recalculate your allocated weightage.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1rem" }}>
+              <button
+                onClick={() => setDeleteGoalId(null)}
+                className="login-btn"
+                style={{ padding: "0.5rem 1.25rem", fontSize: "0.8125rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#ede8e4", borderRadius: "0.5rem" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (deleteGoalId) {
+                    deleteGoal.mutate(deleteGoalId);
+                    setDeleteGoalId(null);
+                  }
+                }}
+                disabled={deleteGoal.isPending}
+                className="login-btn"
+                style={{
+                  padding: "0.5rem 1.25rem",
+                  fontSize: "0.8125rem",
+                  background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                  color: "#ffffff",
+                  borderRadius: "0.5rem",
+                  border: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.375rem"
+                }}
+              >
+                {deleteGoal.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

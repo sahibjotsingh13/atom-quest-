@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Can only edit goals in draft or rejected state" }, { status: 400 });
   }
 
-  if (weightage < 10) return NextResponse.json({ error: "Minimum weightage per goal is 10%" }, { status: 400 });
+  if (weightage < 1) return NextResponse.json({ error: "Minimum weightage per goal is 1%" }, { status: 400 });
   if (sheet.goals.length >= 8) return NextResponse.json({ error: "Maximum 8 goals allowed" }, { status: 400 });
 
   const currentTotal = sheet.goals.reduce((sum, g) => sum + Number(g.weightage), 0);

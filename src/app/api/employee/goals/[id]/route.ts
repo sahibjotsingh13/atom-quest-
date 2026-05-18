@@ -15,13 +15,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const body = await req.json();
     const { title, description, targetValue, targetDate, weightage } = body;
 
-    // Verify goal belongs to employee's draft sheet
+    // Verify goal belongs to employee's draft or rejected sheet
     const goal = await prisma.goal.findFirst({
       where: {
         id: params.id,
         goalSheet: {
           employeeId: session.user.id,
-          status: "draft",
+          status: { in: ["draft", "rejected"] },
         },
       },
       include: {
@@ -89,13 +89,13 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   }
 
   try {
-    // Verify goal belongs to employee's draft sheet
+    // Verify goal belongs to employee's draft or rejected sheet
     const goal = await prisma.goal.findFirst({
       where: {
         id: params.id,
         goalSheet: {
           employeeId: session.user.id,
-          status: "draft",
+          status: { in: ["draft", "rejected"] },
         },
       },
       include: {

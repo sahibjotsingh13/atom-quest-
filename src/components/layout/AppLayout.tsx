@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Target,
   LayoutDashboard,
@@ -39,6 +40,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [theme, setTheme] = useState("dark");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const role = session?.user?.role;
+
+  const { data: teamData } = useQuery({
+    queryKey: ["managerTeam"],
+    queryFn: async () => {
+      const res = await fetch("/api/manager/team");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: !!session && role === "manager",
+  });
+
+  const pendingApprovalsCount = teamData?.summary?.pendingApprovals ?? 0;
 
   useEffect(() => {
     // Initialize theme - default to dark for flow shader
@@ -113,8 +128,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!session) return null;
-
-  const role = session.user?.role;
 
   const navItems: NavItem[] = [
     { label: "Dashboard", href: "/", icon: <LayoutDashboard className="w-5 h-5" />, roles: ["employee", "manager", "admin"] },
@@ -228,9 +241,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               >
                 <span style={{ color: isActive ? "#ff7043" : "inherit", transition: "color 0.3s ease" }}>{item.icon}</span>
                 <span>{item.label}</span>
-                {item.label === "Approvals" && (
+                {item.label === "Approvals" && pendingApprovalsCount > 0 && (
                   <span style={{ marginLeft: "auto", background: "#ff7043", color: "#050a0f", fontSize: "0.625rem", padding: "0.125rem 0.5rem", borderRadius: "9999px", fontWeight: 800 }}>
-                    3
+                    {pendingApprovalsCount}
                   </span>
                 )}
               </Link>

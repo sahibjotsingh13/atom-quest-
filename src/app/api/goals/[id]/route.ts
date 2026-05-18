@@ -92,7 +92,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   if (body.weightage !== undefined) {
     const newWeight = Number(body.weightage);
-    if (newWeight < 10) return NextResponse.json({ error: "Minimum weightage is 10%" }, { status: 400 });
+    if (newWeight < 1) return NextResponse.json({ error: "Minimum weightage is 1%" }, { status: 400 });
     const otherTotal = goal.goalSheet.goals.reduce(
       (sum, g) => sum + (g.id === params.id ? 0 : Number(g.weightage)),
       0

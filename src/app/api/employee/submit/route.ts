@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       where: {
         id: sheetId,
         employeeId: session.user.id,
-        status: "draft",
+        status: { in: ["draft", "rejected"] },
       },
       include: { goals: true },
     });
