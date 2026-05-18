@@ -54,23 +54,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const cycle = await prisma.cycle.findUnique({ where: { id: goal.goalSheet.cycleId } });
-  if (!cycle) return NextResponse.json({ error: "Cycle not found" }, { status: 404 });
-
-  // Validate check-in window
-  const now = new Date();
-  let quarterStart: Date, quarterEnd: Date;
-  switch (quarter) {
-    case "Q1": quarterStart = cycle.q1Start; quarterEnd = cycle.q1End; break;
-    case "Q2": quarterStart = cycle.q2Start; quarterEnd = cycle.q2End; break;
-    case "Q3": quarterStart = cycle.q3Start; quarterEnd = cycle.q3End; break;
-    case "Q4": quarterStart = cycle.q4Start; quarterEnd = cycle.q4End; break;
-    default: return NextResponse.json({ error: "Invalid quarter" }, { status: 400 });
+  // Validate quarter value
+  if (!["Q1", "Q2", "Q3", "Q4"].includes(quarter)) {
+    return NextResponse.json({ error: "Invalid quarter. Must be Q1, Q2, Q3, or Q4." }, { status: 400 });
   }
 
-  if (now < quarterStart || now > quarterEnd) {
-    return NextResponse.json({ error: `Check-in window for ${quarter} is closed` }, { status: 400 });
-  }
+  // Note: Check-in window validation is relaxed for demo purposes.
+  // In production, uncomment the block below to enforce quarterly windows.
+  // const cycle = await prisma.cycle.findUnique({ where: { id: goal.goalSheet.cycleId } });
+  // if (!cycle) return NextResponse.json({ error: "Cycle not found" }, { status: 404 });
+  // const now = new Date();
+  // let quarterStart: Date, quarterEnd: Date;
+  // switch (quarter) {
+  //   case "Q1": quarterStart = cycle.q1Start; quarterEnd = cycle.q1End; break;
+  //   case "Q2": quarterStart = cycle.q2Start; quarterEnd = cycle.q2End; break;
+  //   case "Q3": quarterStart = cycle.q3Start; quarterEnd = cycle.q3End; break;
+  //   case "Q4": quarterStart = cycle.q4Start; quarterEnd = cycle.q4End; break;
+  //   default: return NextResponse.json({ error: "Invalid quarter" }, { status: 400 });
+  // }
+  // if (now < quarterStart || now > quarterEnd) {
+  //   return NextResponse.json({ error: `Check-in window for ${quarter} is not open yet` }, { status: 400 });
+  // }
 
   // Upsert check-in (one per goal per quarter)
   const checkIn = await prisma.checkIn.upsert({
@@ -120,6 +124,20 @@ export async function POST(req: NextRequest) {
     await prisma.goal.update({
       where: { id: goalId },
       data: { progressScore: score, achievementPercentage: score },
+    });
+  }
+
+  // Notify manager when employee logs a check-in
+  if (isOwner && goal.goalSheet.employee.managerId) {
+    await prisma.notification.create({
+      data: {
+        userId: goal.goalSheet.employee.managerId,
+        type: "checkin_submitted",
+        title: `${quarter} Check-in Submitted`,
+        message: `${goal.goalSheet.employee.firstName} ${goal.goalSheet.employee.lastName} logged a ${quarter} check-in for "${goal.title}".`,
+        deepLink: `/dashboard`,
+        metadata: { goalId, quarter },
+      },
     });
   }
 

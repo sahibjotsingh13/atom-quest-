@@ -30,7 +30,7 @@ const formSchema = z.object({
       const num = Number(val);
       return isNaN(num) ? undefined : num;
     },
-    z.number({ invalid_type_error: "Weightage must be a number" })
+    z.number({ message: "Weightage must be a number" })
       .min(1, "Weightage must be at least 1%")
       .max(100, "Weightage cannot exceed 100%")
   ).optional().default(10),

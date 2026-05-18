@@ -256,10 +256,11 @@ model Notification {
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      String
-  category  String
+  category  String    @default("system")
   title     String
   message   String
   deepLink  String?
+  metadata  Json?
   isRead    Boolean   @default(false)
   sentAt    DateTime?
   readAt    DateTime?

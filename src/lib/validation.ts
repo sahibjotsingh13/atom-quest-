@@ -10,7 +10,7 @@ export const goalSchema = z.object({
   targetValue: z.number().positive("Target must be positive").optional(),
   targetDate: z.string().optional(),
   weightage: z.number()
-    .min(1, "Minimum weightage is 1%")
+    .min(10, "Minimum weightage is 10%")
     .max(100, "Maximum weightage is 100%"),
 }).refine((data) => {
   // Timeline UoM requires targetDate, others require targetValue
@@ -29,7 +29,7 @@ export type GoalFormData = z.infer<typeof goalSchema>;
 // Validation rules for goal sheets
 export const GOAL_RULES = {
   MAX_GOALS: 8,
-  MIN_WEIGHTAGE: 1,
+  MIN_WEIGHTAGE: 10,
   MAX_WEIGHTAGE: 100,
   TOTAL_WEIGHTAGE: 100,
 };

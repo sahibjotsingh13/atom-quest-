@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const isOwner = goal.goalSheet.employeeId === session.user.id;
   const isAdmin = session.user.role === "admin";
 
-  // Progress update path (actuals / status)
+  // Progress update path (actuals / status) — allowed even on locked/approved sheets
   if (body.actualValue !== undefined || body.actualDate !== undefined || body.status !== undefined) {
     if (!isOwner && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
@@ -76,9 +76,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json(updated);
   }
 
-  // Metadata edit path (title, weightage, etc.) — only valid in draft/rejected
+  // Metadata edit path (title, weightage, etc.) — only in draft/rejected
   if (goal.goalSheet.status !== "draft" && goal.goalSheet.status !== "rejected") {
-    return NextResponse.json({ error: "Can only edit in draft state" }, { status: 400 });
+    return NextResponse.json({ error: "Can only edit goals in draft or rejected state" }, { status: 400 });
   }
   if (!isOwner && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
@@ -92,7 +92,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   if (body.weightage !== undefined) {
     const newWeight = Number(body.weightage);
-    if (newWeight < 1) return NextResponse.json({ error: "Minimum weightage is 1%" }, { status: 400 });
+    // BRD: minimum 10% per goal
+    if (newWeight < 10) return NextResponse.json({ error: "Minimum weightage per goal is 10%" }, { status: 400 });
     const otherTotal = goal.goalSheet.goals.reduce(
       (sum, g) => sum + (g.id === params.id ? 0 : Number(g.weightage)),
       0
@@ -130,7 +131,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   const isAdmin = session.user.role === "admin";
   if (!isOwner && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   if (goal.goalSheet.status !== "draft" && goal.goalSheet.status !== "rejected") {
-    return NextResponse.json({ error: "Can only delete in draft state" }, { status: 400 });
+    return NextResponse.json({ error: "Can only delete goals in draft or rejected state" }, { status: 400 });
   }
 
   await prisma.goal.delete({ where: { id: params.id } });

@@ -49,11 +49,17 @@ export async function POST(req: NextRequest) {
   const isAdmin = session.user.role === "admin";
   if (!isOwner && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   if (sheet.status !== "draft" && sheet.status !== "rejected") {
-    return NextResponse.json({ error: "Can only edit goals in draft or rejected state" }, { status: 400 });
+    return NextResponse.json({ error: "Can only add goals in draft or rejected state" }, { status: 400 });
   }
 
-  if (weightage < 1) return NextResponse.json({ error: "Minimum weightage per goal is 1%" }, { status: 400 });
-  if (sheet.goals.length >= 8) return NextResponse.json({ error: "Maximum 8 goals allowed" }, { status: 400 });
+  // BRD: minimum 10% weightage per goal
+  if (Number(weightage) < 10) {
+    return NextResponse.json({ error: "Minimum weightage per goal is 10%" }, { status: 400 });
+  }
+  // BRD: maximum 8 goals
+  if (sheet.goals.length >= 8) {
+    return NextResponse.json({ error: "Maximum 8 goals allowed per goal sheet" }, { status: 400 });
+  }
 
   const currentTotal = sheet.goals.reduce((sum, g) => sum + Number(g.weightage), 0);
   if (currentTotal + Number(weightage) > 100) {

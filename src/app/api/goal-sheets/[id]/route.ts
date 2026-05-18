@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const sheet = await prisma.goalSheet.findUnique({
     where: { id: params.id },
-    include: { employee: true },
+    include: { employee: { include: { manager: true } } },
   });
   if (!sheet) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -55,34 +55,106 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const updateData: any = {};
 
-  if (status === "submitted" && isOwner && sheet.status === "draft") {
+  // ── Employee submits (from draft OR after rejection) ─────────────────────
+  if (status === "submitted" && isOwner && (sheet.status === "draft" || sheet.status === "rejected")) {
     const goals = await prisma.goal.findMany({ where: { goalSheetId: params.id } });
     const totalWeight = goals.reduce((sum, g) => sum + Number(g.weightage), 0);
+
+    if (goals.length === 0) {
+      return NextResponse.json({ error: "You must add at least one goal before submitting." }, { status: 400 });
+    }
+    if (goals.length > 8) {
+      return NextResponse.json({ error: "Maximum 8 goals allowed per goal sheet." }, { status: 400 });
+    }
+    const underWeighted = goals.find((g) => Number(g.weightage) < 10);
+    if (underWeighted) {
+      return NextResponse.json({
+        error: `Goal "${underWeighted.title}" has ${Number(underWeighted.weightage)}% weightage. Minimum is 10% per goal.`,
+      }, { status: 400 });
+    }
     if (Math.abs(totalWeight - 100) > 0.01) {
-      return NextResponse.json({ error: `Total weightage must be exactly 100%. Current: ${totalWeight}%` }, { status: 400 });
+      return NextResponse.json({ error: `Total weightage must be exactly 100%. Current: ${totalWeight.toFixed(1)}%` }, { status: 400 });
     }
-    if (goals.length === 0 || goals.length > 8) {
-      return NextResponse.json({ error: "Must have 1-8 goals" }, { status: 400 });
-    }
+
     updateData.status = SheetStatus.submitted;
     updateData.submittedAt = new Date();
     updateData.totalWeightage = totalWeight;
+    updateData.rejectionReason = null;
+
+    // Notify manager
+    if (sheet.employee.managerId) {
+      await prisma.notification.create({
+        data: {
+          userId: sheet.employee.managerId,
+          type: "goal_submitted",
+          title: "New Goal Sheet Pending Review",
+          message: `${sheet.employee.firstName} ${sheet.employee.lastName} (${sheet.employee.employeeId}) has submitted their goal sheet for approval.`,
+          deepLink: `/dashboard`,
+          metadata: { sheetId: params.id, employeeId: sheet.employeeId },
+        },
+      });
+    }
+
+  // ── Manager / Admin approves ─────────────────────────────────────────────
   } else if (status === "approved" && (isManager || isAdmin) && sheet.status === "submitted") {
     updateData.status = SheetStatus.approved;
     updateData.approvedAt = new Date();
     updateData.approvedById = session.user.id;
+
+    await prisma.notification.create({
+      data: {
+        userId: sheet.employeeId,
+        type: "goal_approved",
+        title: "Goal Sheet Approved! 🎉",
+        message: `Your goal sheet has been reviewed and approved. Your goals are now active.`,
+        deepLink: `/dashboard`,
+        metadata: { sheetId: params.id },
+      },
+    });
+
+  // ── Manager / Admin rejects ──────────────────────────────────────────────
   } else if (status === "rejected" && (isManager || isAdmin) && sheet.status === "submitted") {
     updateData.status = SheetStatus.rejected;
-    updateData.rejectionReason = rejectionReason || "Rejected by manager";
+    updateData.rejectionReason = rejectionReason || "Returned for rework — please review and resubmit.";
+
+    await prisma.notification.create({
+      data: {
+        userId: sheet.employeeId,
+        type: "goal_rejected",
+        title: "Goal Sheet Returned for Rework",
+        message: rejectionReason
+          ? `Your manager returned your goal sheet. Reason: ${rejectionReason}`
+          : "Your manager has returned your goal sheet. Please review and resubmit.",
+        deepLink: `/dashboard`,
+        metadata: { sheetId: params.id },
+      },
+    });
+
+  // ── Admin locks after approval ───────────────────────────────────────────
   } else if (status === "locked" && isAdmin && sheet.status === "approved") {
     updateData.status = SheetStatus.locked;
     updateData.lockedAt = new Date();
     updateData.lockedById = session.user.id;
+
+    await prisma.notification.create({
+      data: {
+        userId: sheet.employeeId,
+        type: "goal_locked",
+        title: "Goal Sheet Locked",
+        message: `Your goal sheet has been locked. Quarterly achievement tracking is now active.`,
+        deepLink: `/dashboard`,
+        metadata: { sheetId: params.id },
+      },
+    });
+
+  // ── Employee resets to draft after rejection (to edit goals) ────────────
   } else if (status === "draft" && isOwner && sheet.status === "rejected") {
     updateData.status = SheetStatus.draft;
     updateData.submittedAt = null;
+    updateData.rejectionReason = null;
+
   } else {
-    return NextResponse.json({ error: "Invalid status transition" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid status transition or insufficient permissions." }, { status: 400 });
   }
 
   const updated = await prisma.goalSheet.update({
